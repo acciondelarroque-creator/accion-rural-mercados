@@ -28,7 +28,7 @@ jobs:
 
       - name: Obtener precios
         run: |
-          python update.py
+          python actualizar.py
 
       - name: Guardar precios actualizados
         run: |
