@@ -1,150 +1,42 @@
-import json
-import re
-from datetime import datetime, timezone
-from pathlib import Path
+name: Actualizar mercados
 
-import requests
-from bs4 import BeautifulSoup
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
 
+permissions:
+  contents: write
 
-URL = "https://granos.ar/"
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
 
-PRODUCTOS = {
-    "soja": "Soja",
-    "maiz": "Maíz",
-    "trigo": "Trigo",
-    "girasol": "Girasol",
-    "sorgo": "Sorgo"
-}
+    steps:
 
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
 
-def obtener_precio(texto, producto):
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
 
-    patron = (
-        re.escape(producto)
-        + r".{0,500}?\$([0-9][0-9.]*)"
-        + r"(?:,[0-9]+)?\s*/tn"
-    )
+      - name: Instalar dependencias
+        run: |
+          pip install requests beautifulsoup4
 
-    resultado = re.search(
-        patron,
-        texto,
-        flags=re.IGNORECASE | re.DOTALL
-    )
+      - name: Obtener precios
+        run: |
+          python update.py
 
-    if not resultado:
-        return None
+      - name: Guardar precios actualizados
+        run: |
+          git config user.name "Acción Rural Bot"
+          git config user.email "actions@users.noreply.github.com"
 
-    valor = resultado.group(1)
+          git add data.json
 
-    valor = valor.replace(".", "")
+          git diff --cached --quiet || git commit -m "Actualizar precios de mercados"
 
-    try:
-        return int(valor)
-    except ValueError:
-        return None
-
-
-def main():
-
-    respuesta = requests.get(
-        URL,
-        timeout=30,
-        headers={
-            "User-Agent":
-            "AccionRuralMercados/1.0"
-        }
-    )
-
-    respuesta.raise_for_status()
-
-    sopa = BeautifulSoup(
-        respuesta.text,
-        "html.parser"
-    )
-
-    texto = sopa.get_text(
-        " ",
-        strip=True
-    )
-
-
-    valores = {}
-
-    for clave, producto in PRODUCTOS.items():
-
-        valores[clave] = obtener_precio(
-            texto,
-            producto
-        )
-
-
-    encontrados = sum(
-        1
-        for valor in valores.values()
-        if valor is not None
-    )
-
-
-    if encontrados < 3:
-
-        raise RuntimeError(
-            "No se pudieron obtener suficientes precios: "
-            + str(valores)
-        )
-
-
-    fecha = None
-
-    resultado_fecha = re.search(
-        r"Precios de Pizarra CAC.*?"
-        r"(\d{2}/\d{2}/\d{4})",
-        texto,
-        flags=re.IGNORECASE | re.DOTALL
-    )
-
-    if resultado_fecha:
-
-        fecha = resultado_fecha.group(1)
-
-
-    datos = {
-
-        "ok": True,
-
-        "source":
-        "granos.ar / CAC-BCR",
-
-        "source_url":
-        URL,
-
-        "date":
-        fecha,
-
-        "values":
-        valores,
-
-        "updated_at":
-        datetime.now(
-            timezone.utc
-        ).isoformat()
-
-    }
-
-
-    Path("data.json").write_text(
-
-        json.dumps(
-            datos,
-            ensure_ascii=False,
-            indent=2
-        ),
-
-        encoding="utf-8"
-
-    )
-
-
-if __name__ == "__main__":
-
-    main()
+          git push
