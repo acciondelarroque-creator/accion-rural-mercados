@@ -3,358 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Acción Rural - Mercados</title>
-
 <style>
-
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    padding: 0;
-    background: #111;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-#mercados {
-    width: 100%;
-    height: 40px;
-    background: #111;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    color: #fff;
-}
-
-.titulo {
-    height: 40px;
-    min-width: 105px;
-    background: #087044;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    font-size: 12px;
-    font-weight: 700;
-    position: relative;
-    z-index: 5;
-}
-
-.punto {
-    width: 7px;
-    height: 7px;
-    background: #fff;
-    border-radius: 50%;
-}
-
-.ventana {
-    height: 40px;
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-    white-space: nowrap;
-}
-
-.pista {
-    height: 40px;
-    position: absolute;
-    left: 0;
-    top: 0;
-
-    display: flex;
-    align-items: center;
-
-    white-space: nowrap;
-
-    animation: correr 34s linear infinite;
-}
-
-.item {
-    display: inline-flex;
-    align-items: center;
-
-    padding: 0 18px;
-
-    color: #fff;
-
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.producto {
-    color: #8bd0a0;
-    font-weight: 700;
-    margin-right: 7px;
-}
-
-.separador {
-    color: #666;
-    margin-left: 18px;
-}
-
-.fecha {
-    color: #999;
-    font-size: 10px;
-    margin-left: 10px;
-}
-
-.estado {
-    color: #aaa;
-    font-size: 12px;
-    padding-left: 18px;
-}
-
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvetica, sans-serif; }
+#mercados { width: 100%; height: 40px; background: #111; display: flex; align-items: center; overflow: hidden; color: #fff; }
+.titulo { height: 40px; min-width: 105px; background: #087044; display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 12px; font-weight: 700; position: relative; z-index: 5; }
+.punto { width: 7px; height: 7px; background: #fff; border-radius: 50%; }
+.ventana { height: 40px; flex: 1; overflow: hidden; position: relative; white-space: nowrap; }
+.pista { height: 40px; position: absolute; left: 0; top: 0; display: flex; align-items: center; white-space: nowrap; animation: correr 34s linear infinite; }
+.item { display: inline-flex; align-items: center; padding: 0 18px; color: #fff; font-size: 13px; font-weight: 600; }
+.producto { color: #8bd0a0; font-weight: 700; margin-right: 7px; }
+.separador { color: #666; margin-left: 18px; }
+.fecha { color: #999; font-size: 10px; margin-left: 10px; }
+.estado { color: #aaa; font-size: 12px; padding-left: 18px; }
 @keyframes correr {
-
-    0% {
-        transform: translateX(100%);
-    }
-
-    100% {
-        transform: translateX(-100%);
-    }
-
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
 }
-
-#mercados:hover .pista {
-    animation-play-state: paused;
-}
-
-
-/* CELULARES */
-
+#mercados:hover .pista { animation-play-state: paused; }
 @media (max-width: 600px) {
-
-    #mercados,
-    .titulo,
-    .ventana,
-    .pista {
-        height: 36px;
-    }
-
-    .titulo {
-        min-width: 82px;
-        font-size: 10px;
-    }
-
-    .item {
-        padding: 0 12px;
-        font-size: 11px;
-    }
-
-    .pista {
-        animation-duration: 28s;
-    }
-
-    .fecha {
-        display: none;
-    }
-
+    #mercados, .titulo, .ventana, .pista { height: 36px; }
+    .titulo { min-width: 82px; font-size: 10px; }
+    .item { padding: 0 12px; font-size: 11px; }
+    .pista { animation-duration: 28s; }
+    .fecha { display: none; }
 }
-
 </style>
-
 </head>
-
 <body>
-
 <div id="mercados">
-
-    <div class="titulo">
-        <span class="punto"></span>
-        MERCADOS
-    </div>
-
+    <div class="titulo"><span class="punto"></span>MERCADOS</div>
     <div class="ventana">
-
         <div class="pista" id="pista">
-
-            <span class="estado">
-                Actualizando mercados...
-            </span>
-
+            <span class="estado">Actualizando mercados...</span>
         </div>
-
     </div>
-
 </div>
-
-
 <script>
-
 (function () {
-
-    const pista =
-        document.getElementById("pista");
-
+    const pista = document.getElementById("pista");
 
     function precio(valor) {
-
-        if (
-            valor === null ||
-            valor === undefined
-        ) {
-            return "S/C";
-        }
-
-        return "$" +
-            Number(valor).toLocaleString("es-AR") +
-            "/tn";
-
+        if (valor === null || valor === undefined) return "S/C";
+        return "$" + Number(valor).toLocaleString("es-AR") + "/tn";
     }
 
-
     function mostrar(datos) {
-
         const productos = [
-
             ["soja", "Soja"],
-
             ["maiz", "Maíz"],
-
             ["trigo", "Trigo"],
-
             ["girasol", "Girasol"],
-
             ["sorgo", "Sorgo"]
-
         ];
-
 
         let html = "";
 
-
         productos.forEach(function (producto) {
-
             const clave = producto[0];
-
             const nombre = producto[1];
-
-            html +=
-
-                '<span class="item">' +
-
-                    '<span class="producto">' +
-                        nombre +
-                    '</span>' +
-
-                    '<span>' +
-                        precio(datos.values[clave]) +
-                    '</span>' +
-
-                    '<span class="separador">' +
-                        '●' +
-                    '</span>' +
-
+            html += '<span class="item">' +
+                '<span class="producto">' + nombre + '</span>' +
+                '<span>' + precio(datos.values[clave]) + '</span>' +
+                '<span class="separador">●</span>' +
                 '</span>';
-
         });
-
 
         if (datos.date) {
-
-            html +=
-
-                '<span class="item">' +
-
-                    '<span class="fecha">' +
-                        'Pizarra: ' +
-                        datos.date +
-                    '</span>' +
-
-                '</span>';
-
+            html += '<span class="item"><span class="fecha">Pizarra: ' + datos.date + '</span></span>';
         }
 
+        // Duplicamos exactamente la cinta para que el desplazamiento sea continuo.
+        pista.innerHTML = html + html;
 
-        /*
-         * Repetimos la información para
-         * que la cinta sea continua.
-         */
-
-        pista.innerHTML =
-            html + html;
-
-
-        /*
-         * Reiniciamos la animación.
-         */
-
+        // Reiniciamos la animación sin dejar un espacio en blanco.
         pista.style.animation = "none";
-
         void pista.offsetWidth;
-
-        pista.style.animation =
-            "correr 34s linear infinite";
-
+        pista.style.animation = "correr 34s linear infinite";
     }
-
 
     function actualizar() {
-
-        fetch(
-            "data.json?v=" + Date.now(),
-            {
-                cache: "no-store"
-            }
-        )
-
-        .then(function (respuesta) {
-
-            if (!respuesta.ok) {
-
-                throw new Error(
-                    "No se pudo obtener data.json"
-                );
-
-            }
-
-            return respuesta.json();
-
-        })
-
-        .then(function (datos) {
-
-            mostrar(datos);
-
-        })
-
-        .catch(function (error) {
-
-            console.log(
-                "Acción Rural mercados:",
-                error
-            );
-
-        });
-
+        fetch("data.json?v=" + Date.now(), { cache: "no-store" })
+            .then(function (respuesta) {
+                if (!respuesta.ok) throw new Error("No se pudo obtener data.json");
+                return respuesta.json();
+            })
+            .then(function (datos) { mostrar(datos); })
+            .catch(function (error) { console.log("Acción Rural mercados:", error); });
     }
 
-
-    /*
-     * Primera actualización.
-     */
-
     actualizar();
-
-
-    /*
-     * Volver a consultar cada 30 minutos.
-     */
-
-    setInterval(
-        actualizar,
-        30 * 60 * 1000
-    );
-
-
+    setInterval(actualizar, 30 * 60 * 1000);
 })();
-
 </script>
-
 </body>
 </html>
