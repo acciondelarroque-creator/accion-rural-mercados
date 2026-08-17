@@ -9,7 +9,7 @@
 html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvetica, sans-serif; }
 #mercados { width: 100%; height: 40px; background: #111; display: flex; align-items: center; overflow: hidden; color: #fff; }
 .ventana { width: 100%; height: 40px; overflow: hidden; position: relative; white-space: nowrap; }
-.pista { height: 40px; position: absolute; left: 0; top: 0; display: flex; align-items: center; white-space: nowrap; animation: correr 34s linear infinite; }
+.pista { height: 40px; position: absolute; left: 0; top: 0; display: flex; align-items: center; white-space: nowrap; animation: correr 31s linear infinite; }
 .item { display: inline-flex; align-items: center; padding: 0 18px; color: #fff; font-size: 13px; font-weight: 600; }
 .producto { color: #8bd0a0; font-weight: 700; margin-right: 7px; }
 .separador { color: #666; margin-left: 18px; }
@@ -20,7 +20,7 @@ html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvet
 @media (max-width: 600px) {
 #mercados, .ventana, .pista { height: 36px; }
 .item { padding: 0 12px; font-size: 11px; }
-.pista { animation-duration: 28s; }
+.pista { animation-duration: 25s; }
 .fecha { font-size: 12px; }
 }
 </style>
@@ -41,7 +41,7 @@ if (datos.date) html += '<span class="item"><span class="fecha">Pizarra: '+datos
 pista.innerHTML = html + html + html;
 pista.style.animation = "none";
 void pista.offsetWidth;
-pista.style.animation = "correr 34s linear infinite";
+pista.style.animation = "correr 31s linear infinite";
 }
 function actualizar() { fetch("data.json?v="+Date.now(), {cache:"no-store"}).then(function(respuesta){ if(!respuesta.ok) throw new Error("No se pudo obtener data.json"); return respuesta.json(); }).then(function(datos){ mostrar(datos); }).catch(function(error){ console.log("Acción Rural pizarra:",error); }); }
 actualizar();
