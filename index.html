@@ -19,7 +19,7 @@ html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvet
 .estado { color: #aaa; font-size: 12px; padding-left: 18px; }
 @keyframes correr {
     from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    to { transform: translateX(-33.333333%); }
 }
 #mercados:hover .pista { animation-play-state: paused; }
 @media (max-width: 600px) {
@@ -74,10 +74,10 @@ html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvet
             html += '<span class="item"><span class="fecha">Pizarra: ' + datos.date + '</span></span>';
         }
 
-        // Duplicamos exactamente la cinta para que el desplazamiento sea continuo.
-        pista.innerHTML = html + html;
+        // Tres copias garantizan que siempre haya información ocupando la ventana.
+        // Al desplazar un tercio, la siguiente copia queda exactamente en el mismo lugar.
+        pista.innerHTML = html + html + html;
 
-        // Reiniciamos la animación sin dejar un espacio en blanco.
         pista.style.animation = "none";
         void pista.offsetWidth;
         pista.style.animation = "correr 34s linear infinite";
