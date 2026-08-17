@@ -1,42 +1,104 @@
-name: Actualizar mercados
+import json
+import re
+from datetime import datetime, timezone
 
-on:
-  schedule:
-    - cron: "*/30 * * * *"
-  workflow_dispatch:
+import requests
+from bs4 import BeautifulSoup
 
-permissions:
-  contents: write
 
-jobs:
-  actualizar:
-    runs-on: ubuntu-latest
+URL = "https://news.agrofy.com.ar/granos/precios-pizarra"
 
-    steps:
 
-      - name: Descargar repositorio
-        uses: actions/checkout@v4
+def limpiar_numero(valor):
+    if not valor:
+        return None
 
-      - name: Preparar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+    valor = valor.replace("$", "")
+    valor = valor.replace(".", "")
+    valor = valor.replace(",", ".")
 
-      - name: Instalar dependencias
-        run: |
-          pip install requests beautifulsoup4
+    try:
+        return float(valor)
+    except ValueError:
+        return None
 
-      - name: Obtener precios
-        run: |
-          python update.py
 
-      - name: Guardar precios actualizados
-        run: |
-          git config user.name "Acción Rural Bot"
-          git config user.email "actions@users.noreply.github.com"
+def buscar_precio(texto, producto):
+    patron = rf"{producto}.{{0,300}}?\$?\s*([0-9][0-9\.,]*)"
 
-          git add data.json
+    resultado = re.search(
+        patron,
+        texto,
+        flags=re.IGNORECASE | re.DOTALL
+    )
 
-          git diff --cached --quiet || git commit -m "Actualizar precios de mercados"
+    if not resultado:
+        return None
 
-          git push
+    return limpiar_numero(resultado.group(1))
+
+
+def main():
+
+    respuesta = requests.get(
+        URL,
+        headers={
+            "User-Agent": "Mozilla/5.0"
+        },
+        timeout=30
+    )
+
+    respuesta.raise_for_status()
+
+    soup = BeautifulSoup(
+        respuesta.text,
+        "html.parser"
+    )
+
+    texto = soup.get_text(
+        " ",
+        strip=True
+    )
+
+    precios = {
+        "soja": buscar_precio(texto, "soja"),
+        "maiz": buscar_precio(texto, "maíz|maiz"),
+        "trigo": buscar_precio(texto, "trigo"),
+        "girasol": buscar_precio(texto, "girasol"),
+        "sorgo": buscar_precio(texto, "sorgo")
+    }
+
+    datos = {
+        "actualizado": datetime.now(
+            timezone.utc
+        ).isoformat(),
+
+        "fuente": "Agrofy News",
+
+        "url": URL,
+
+        "precios": precios
+    }
+
+    with open(
+        "data.json",
+        "w",
+        encoding="utf-8"
+    ) as archivo:
+
+        json.dump(
+            datos,
+            archivo,
+            ensure_ascii=False,
+            indent=2
+        )
+
+    print(json.dumps(
+        datos,
+        ensure_ascii=False,
+        indent=2
+    ))
+
+
+if __name__ == "__main__":
+    main()
