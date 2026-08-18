@@ -26,16 +26,20 @@ jobs:
         run: |
           pip install requests beautifulsoup4
 
-      - name: Obtener precios
+      - name: Obtener precios de granos
         run: |
           python update.py
+
+      - name: Obtener precios MAG Cañuelas
+        run: |
+          python update_mag.py
 
       - name: Guardar precios actualizados
         run: |
           git config user.name "Acción Rural Bot"
           git config user.email "actions@users.noreply.github.com"
 
-          git add data.json previous.json
+          git add data.json previous.json mag.json mag_previous.json
 
           git diff --cached --quiet || git commit -m "Actualizar precios de mercados"
 
