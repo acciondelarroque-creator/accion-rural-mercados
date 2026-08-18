@@ -1,0 +1,29 @@
+name: Probar Chicago
+
+on:
+  push:
+    paths:
+      - "test_chicago.py"
+      - ".github/workflows/test-chicago.yml"
+  workflow_dispatch:
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Instalar dependencias
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Consultar Chicago
+        run: |
+          python test_chicago.py
