@@ -80,16 +80,26 @@ def encontrar_promedios(lineas):
 
 
 def encontrar_cabezas_totales(lineas):
+    """Encuentra las cabezas totales tanto si la fila está en una sola línea
+    como si el extractor HTML la separa en dos líneas."""
     for i, linea in enumerate(lineas):
-        if linea.upper().startswith("TOTALES") and i + 1 < len(lineas):
-            tokens = lineas[i + 1].split()
-            # La fila de totales tiene: promedio, cabezas, importe, kgs, promedio kgs.
-            for posicion in range(len(tokens)):
-                valor = numero_entero(tokens[posicion])
-                if valor is not None and posicion + 1 < len(tokens):
-                    siguiente = tokens[posicion + 1]
-                    if siguiente.startswith("$"):
-                        return valor
+        if not linea.upper().startswith("TOTALES"):
+            continue
+
+        candidatos = [linea]
+        if i + 1 < len(lineas):
+            candidatos.append(lineas[i + 1])
+
+        for candidato in candidatos:
+            tokens = candidato.replace("|", " ").split()
+            for posicion, token in enumerate(tokens):
+                valor = numero_entero(token)
+                if valor is None or posicion + 1 >= len(tokens):
+                    continue
+                siguiente = tokens[posicion + 1]
+                if siguiente.startswith("$"):
+                    return valor
+
     return None
 
 
@@ -150,7 +160,6 @@ def main():
     anterior = cargar_anterior()
     fecha_anterior = anterior.get("date")
 
-    # Si no apareció una rueda nueva, conservar todo lo anterior.
     if fecha_publicada and fecha_anterior and fecha_publicada == fecha_anterior:
         print(f"MAG: sin rueda nueva ({fecha_publicada}). Se conservan mag.json y mag_previous.json.")
         return
