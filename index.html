@@ -5,8 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Acción Rural - Mercados</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#fff;font-family:Georgia,"Times New Roman",serif}.ticker{width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:42px;line-height:42px}.ticker-track{display:inline-flex;min-width:max-content;animation:scroll 45s linear infinite}.ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 22px;font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600}.ticker-item .up{color:#20c878}.ticker-item .down{color:#ff3b30}.ticker-item .muted{color:#aaa;font-size:12px}@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.mag-ticker{margin-top:0;background:#173f60;color:#fff;height:68px;line-height:normal;overflow:hidden}.mag-track{display:inline-flex;min-width:max-content;animation:scroll-mag 55s linear infinite}.mag-card{min-width:170px;height:68px;padding:9px 18px;border-right:1px solid rgba(255,255,255,.25);text-align:center;font-family:Georgia,"Times New Roman",serif}.mag-title{font-size:14px;font-weight:700;display:block}.mag-value{font-size:16px;margin-top:4px;display:block}.mag-change{font-size:12px;margin-left:4px}.mag-change.up{color:#42e08d}.mag-change.down{color:#ff6b6b}.mag-date{min-width:190px}.mag-date small{display:block;color:#cbd7e2;font-size:10px;margin-top:4px}@keyframes scroll-mag{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;font-family:Georgia,"Times New Roman",serif}
+.ticker{width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:42px;line-height:42px}
+.ticker-track{display:inline-flex;min-width:max-content;animation:scroll 45s linear infinite;will-change:transform}
+.ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 22px;font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600}
+.ticker-item .up{color:#20c878}.ticker-item .down{color:#ff3b30}.ticker-item .muted{color:#aaa;font-size:12px}
+@keyframes scroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+.mag-ticker{margin-top:0;background:#173f60;color:#fff;height:68px;line-height:normal;overflow:hidden}
+.mag-track{display:inline-flex;min-width:max-content;animation:scroll-mag 55s linear infinite;will-change:transform}
+.mag-card{min-width:170px;height:68px;padding:9px 18px;border-right:1px solid rgba(255,255,255,.25);text-align:center;font-family:Georgia,"Times New Roman",serif}
+.mag-title{font-size:14px;font-weight:700;display:block}.mag-value{font-size:16px;margin-top:4px;display:block}.mag-change{font-size:12px;margin-left:4px}.mag-change.up{color:#42e08d}.mag-change.down{color:#ff6b6b}.mag-date{min-width:190px}.mag-date small{display:block;color:#cbd7e2;font-size:10px;margin-top:4px}
+@keyframes scroll-mag{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 @media(max-width:600px){.ticker{height:36px;line-height:36px}.ticker-item{padding:0 14px;font-size:12px}.mag-ticker{height:58px}.mag-track{animation-duration:45s}.mag-card{min-width:135px;height:58px;padding:7px 10px}.mag-title{font-size:11px}.mag-value{font-size:13px;margin-top:3px}.mag-date{min-width:150px}.mag-date small{font-size:9px;margin-top:2px}}
 </style>
 </head>
@@ -22,7 +32,12 @@ function bcrItem(label,value,delta){return `<span class="ticker-item"><b>${label
 function renderBCR(d){let html='';html+=bcrItem('Soja',d.values.soja,d.changes.soja);html+=bcrItem('Maíz',d.values.maiz,d.changes.maiz);html+=bcrItem('Trigo',d.values.trigo,d.changes.trigo);html+=bcrItem('Girasol',d.values.girasol,d.changes.girasol);html+=bcrItem('Sorgo',d.values.sorgo,d.changes.sorgo);html+=`<span class="ticker-item"><b>Pizarra: ${d.date||''}</b> <span class="muted">Fuente BCR</span></span>`;document.getElementById('bcr-track').innerHTML=html+html;}
 function magCard(label,value,delta){return `<span class="mag-card"><span class="mag-title">${label}</span><span class="mag-value">$${Number(value).toLocaleString('es-AR',{minimumFractionDigits:3,maximumFractionDigits:3})}/kg ${change(delta)}</span></span>`}
 function renderMAG(d){let html=`<span class="mag-card mag-date"><span class="mag-title">MAG CAÑUELAS</span><span class="mag-value">${d.date||''}</span><small>Mercado Agroganadero</small></span><span class="mag-card"><span class="mag-title">Cabezas</span><span class="mag-value">${fmt(d.heads)}</span></span>`;html+=magCard('Novillos',d.values.novillos,d.changes.novillos);html+=magCard('Novillitos',d.values.novillitos,d.changes.novillitos);html+=magCard('Vaquillonas',d.values.vaquillonas,d.changes.vaquillonas);html+=magCard('Vacas',d.values.vacas,d.changes.vacas);html+=magCard('Toros',d.values.toros,d.changes.toros);document.getElementById('mag-track').innerHTML=html+html;}
-async function load(){try{const [b,m]=await Promise.all([fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'}),fetch(MAG_URL+'?t='+Date.now(),{cache:'no-store'})]);if(b.ok)renderBCR(await b.json());if(m.ok)renderMAG(await m.json());}catch(e){console.error(e)}}load();setInterval(load,1800000);
+async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json());}catch(e){console.error('BCR:',e)}}
+async function loadMAG(){try{const r=await fetch(MAG_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderMAG(await r.json());}catch(e){console.error('MAG:',e)}}
+loadBCR();
+loadMAG();
+setInterval(loadBCR,1800000);
+setInterval(loadMAG,1800000);
 </script>
 </body>
 </html>
