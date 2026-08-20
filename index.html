@@ -1,170 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Acción Rural - Mercados</title>
 <style>
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvetica, sans-serif; }
-.marquesina { width: 100%; height: 40px; background: #111; display: flex; align-items: center; overflow: hidden; color: #fff; border-bottom: 1px solid #222; }
-.ventana { width: 100%; height: 40px; overflow: hidden; position: relative; white-space: nowrap; }
-.pista { height: 40px; position: absolute; left: 0; top: 0; display: flex; align-items: center; white-space: nowrap; }
-.item { display: inline-flex; align-items: center; padding: 0 18px; color: #fff; font-size: 13px; font-weight: 600; }
-.producto { color: #8bd0a0; font-weight: 700; margin-right: 7px; }
-.separador { color: #666; margin-left: 18px; }
-.fecha { color: #fff; font-size: 14px; font-weight: 700; margin-left: 10px; }
-.estado { color: #aaa; font-size: 12px; padding-left: 18px; }
-.cambio { font-size: 13px; font-weight: 800; margin-left: 7px; }
-.subio { color: #20c878; }
-.bajo { color: #ff3b30; }
-.igual { color: #aaa; }
-.fuente { color: #aaa; font-size: 11px; font-weight: 500; margin-left: 8px; }
-.seccion { color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .2px; }
-.bcr { background: #111; }
-.mag { background: #172b3a; }
-.mag .producto { color: #a8d8bb; }
-.mag .seccion { color: #fff; }
-@keyframes correrBcr { from { transform: translateX(0); } to { transform: translateX(-33.333333%); } }
-@keyframes correrMag { from { transform: translateX(0); } to { transform: translateX(-33.333333%); } }
-.marquesina:hover .pista { animation-play-state: paused; }
-@media (max-width: 600px) {
-.marquesina, .ventana, .pista { height: 36px; }
-.item { padding: 0 12px; font-size: 11px; }
-.fecha { font-size: 12px; }
-.cambio { font-size: 11px; margin-left: 5px; }
-.fuente { font-size: 10px; }
-.seccion { font-size: 11px; }
-}
+*{box-sizing:border-box}body{margin:0;background:#fff;font-family:Georgia,"Times New Roman",serif}.ticker{width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:42px;line-height:42px}.ticker-track{display:inline-flex;min-width:max-content;animation:scroll 45s linear infinite}.ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 22px;font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600}.ticker-item .up{color:#20c878}.ticker-item .down{color:#ff3b30}.ticker-item .muted{color:#aaa;font-size:12px}@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mag-ticker{margin-top:0;background:#173f60;color:#fff;height:68px;line-height:normal;overflow:hidden}.mag-track{display:inline-flex;min-width:max-content;animation:scroll-mag 55s linear infinite}.mag-card{min-width:170px;height:68px;padding:9px 18px;border-right:1px solid rgba(255,255,255,.25);text-align:center;font-family:Georgia,"Times New Roman",serif}.mag-title{font-size:14px;font-weight:700;display:block}.mag-value{font-size:16px;margin-top:4px;display:block}.mag-change{font-size:12px;margin-left:4px}.mag-change.up{color:#42e08d}.mag-change.down{color:#ff6b6b}.mag-date{min-width:190px}.mag-date small{display:block;color:#cbd7e2;font-size:10px;margin-top:4px}@keyframes scroll-mag{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(max-width:600px){.ticker{height:36px;line-height:36px}.ticker-item{padding:0 14px;font-size:12px}.mag-ticker{height:58px}.mag-track{animation-duration:45s}.mag-card{min-width:135px;height:58px;padding:7px 10px}.mag-title{font-size:11px}.mag-value{font-size:13px;margin-top:3px}.mag-date{min-width:150px}.mag-date small{font-size:9px;margin-top:2px}}
 </style>
 </head>
 <body>
-
-<!-- MARQUESINA 1: MERCADO DE GRANOS / BCR -->
-<div id="marquesina-bcr" class="marquesina bcr">
-  <div class="ventana">
-    <div class="pista" id="pista-bcr"><span class="estado">Actualizando Mercado de Granos...</span></div>
-  </div>
-</div>
-
-<!-- MARQUESINA 2: MAG CAÑUELAS -->
-<div id="marquesina-mag" class="marquesina mag">
-  <div class="ventana">
-    <div class="pista" id="pista-mag"><span class="estado">Actualizando MAG Cañuelas...</span></div>
-  </div>
-</div>
-
+<div id="bcr" class="ticker" aria-label="Mercado de granos BCR"><div id="bcr-track" class="ticker-track"></div></div>
+<div id="mag" class="mag-ticker" aria-label="Mercado Agroganadero de Cañuelas"><div id="mag-track" class="mag-track"></div></div>
 <script>
-(function () {
-  const pistaBcr = document.getElementById("pista-bcr");
-  const pistaMag = document.getElementById("pista-mag");
-
-  function precio(valor, unidad) {
-    if (valor === null || valor === undefined) return "S/C";
-    return "$" + Number(valor).toLocaleString("es-AR") + unidad;
-  }
-
-  function cambio(valor) {
-    if (valor === null || valor === undefined) return "";
-    if (valor > 0) return '<span class="cambio subio">▲ ' + Math.abs(valor).toFixed(2).replace('.', ',') + '%</span>';
-    if (valor < 0) return '<span class="cambio bajo">▼ ' + Math.abs(valor).toFixed(2).replace('.', ',') + '%</span>';
-    return '<span class="cambio igual">= 0,00%</span>';
-  }
-
-  function cabezas(valor) {
-    return Number(valor || 0).toLocaleString("es-AR");
-  }
-
-  function iniciar(pista, html, duracion) {
-    pista.innerHTML = html + html + html;
-    pista.style.animation = "none";
-    void pista.offsetWidth;
-    pista.style.animation = duracion + "s linear infinite";
-  }
-
-  function mostrarBcr(datos) {
-    const productos = [
-      ["soja", "Soja"],
-      ["maiz", "Maíz"],
-      ["trigo", "Trigo"],
-      ["girasol", "Girasol"],
-      ["sorgo", "Sorgo"]
-    ];
-
-    let html = '<span class="item"><span class="seccion">MERCADO DE GRANOS</span></span>';
-
-    productos.forEach(function (producto) {
-      const clave = producto[0];
-      const nombre = producto[1];
-      html += '<span class="item"><span class="producto">' + nombre + '</span><span>' + precio(datos.values[clave], '/tn') + '</span>' + cambio(datos.changes ? datos.changes[clave] : null) + '<span class="separador">●</span></span>';
-    });
-
-    if (datos.date) {
-      html += '<span class="item"><span class="fecha">Pizarra: ' + datos.date + '</span><span class="fuente">Fuente BCR</span></span>';
-    }
-
-    iniciar(pistaBcr, html, 31);
-  }
-
-  function mostrarMag(mag) {
-    const categorias = [
-      ["novillos", "Novillos"],
-      ["novillitos", "Novillitos"],
-      ["vaquillonas", "Vaquillonas"],
-      ["vacas", "Vacas"],
-      ["toros", "Toros"]
-    ];
-
-    let html = '<span class="item"><span class="seccion">MAG CAÑUELAS</span></span>';
-
-    categorias.forEach(function (categoria) {
-      const clave = categoria[0];
-      const nombre = categoria[1];
-      html += '<span class="item"><span class="producto">' + nombre + '</span><span>' + precio(mag.values[clave], '/kg') + '</span>' + cambio(mag.changes ? mag.changes[clave] : null) + '<span class="separador">●</span></span>';
-    });
-
-    if (mag.heads !== undefined && mag.heads !== null) {
-      html += '<span class="item"><span class="producto">Cabezas</span><span>' + cabezas(mag.heads) + '</span><span class="separador">●</span></span>';
-    }
-
-    if (mag.date) {
-      html += '<span class="item"><span class="fecha">Rueda: ' + mag.date + '</span><span class="fuente">Fuente MAG</span></span>';
-    }
-
-    iniciar(pistaMag, html, 31);
-  }
-
-  function actualizarBcr() {
-    fetch("data.json?v=" + Date.now(), { cache: "no-store" })
-      .then(function (r) {
-        if (!r.ok) throw new Error("No se pudo obtener data.json");
-        return r.json();
-      })
-      .then(mostrarBcr)
-      .catch(function (error) {
-        console.log("Acción Rural BCR:", error);
-      });
-  }
-
-  function actualizarMag() {
-    fetch("mag.json?v=" + Date.now(), { cache: "no-store" })
-      .then(function (r) {
-        if (!r.ok) throw new Error("No se pudo obtener mag.json");
-        return r.json();
-      })
-      .then(mostrarMag)
-      .catch(function (error) {
-        console.log("Acción Rural MAG:", error);
-      });
-  }
-
-  actualizarBcr();
-  actualizarMag();
-
-  // Cada fuente se actualiza por separado cada 30 minutos.
-  setInterval(actualizarBcr, 30 * 60 * 1000);
-  setInterval(actualizarMag, 30 * 60 * 1000);
-})();
+const BCR_URL='data.json';
+const MAG_URL='mag.json';
+function fmt(n){return n==null?'S/C':new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(n)}
+function change(v){if(v==null)return '';const cls=v>0?'up':v<0?'down':'';const arrow=v>0?'▲':v<0?'▼':'=';return `<span class="mag-change ${cls}">${arrow} ${Math.abs(v).toFixed(2)}%</span>`}
+function bcrItem(label,value,delta){return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`}</span>`}
+function renderBCR(d){let html='';html+=bcrItem('Soja',d.values.soja,d.changes.soja);html+=bcrItem('Maíz',d.values.maiz,d.changes.maiz);html+=bcrItem('Trigo',d.values.trigo,d.changes.trigo);html+=bcrItem('Girasol',d.values.girasol,d.changes.girasol);html+=bcrItem('Sorgo',d.values.sorgo,d.changes.sorgo);html+=`<span class="ticker-item"><b>Pizarra: ${d.date||''}</b> <span class="muted">Fuente BCR</span></span>`;document.getElementById('bcr-track').innerHTML=html+html;}
+function magCard(label,value,delta){return `<span class="mag-card"><span class="mag-title">${label}</span><span class="mag-value">$${Number(value).toLocaleString('es-AR',{minimumFractionDigits:3,maximumFractionDigits:3})}/kg ${change(delta)}</span></span>`}
+function renderMAG(d){let html=`<span class="mag-card mag-date"><span class="mag-title">MAG CAÑUELAS</span><span class="mag-value">${d.date||''}</span><small>Mercado Agroganadero</small></span><span class="mag-card"><span class="mag-title">Cabezas</span><span class="mag-value">${fmt(d.heads)}</span></span>`;html+=magCard('Novillos',d.values.novillos,d.changes.novillos);html+=magCard('Novillitos',d.values.novillitos,d.changes.novillitos);html+=magCard('Vaquillonas',d.values.vaquillonas,d.changes.vaquillonas);html+=magCard('Vacas',d.values.vacas,d.changes.vacas);html+=magCard('Toros',d.values.toros,d.changes.toros);document.getElementById('mag-track').innerHTML=html+html;}
+async function load(){try{const [b,m]=await Promise.all([fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'}),fetch(MAG_URL+'?t='+Date.now(),{cache:'no-store'})]);if(b.ok)renderBCR(await b.json());if(m.ok)renderMAG(await m.json());}catch(e){console.error(e)}}load();setInterval(load,1800000);
 </script>
 </body>
 </html>
