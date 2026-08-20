@@ -27,9 +27,11 @@ jobs:
           pip install requests beautifulsoup4
 
       - name: Obtener precios de granos
+        continue-on-error: true
         run: python update.py
 
       - name: Obtener precios MAG Cañuelas
+        continue-on-error: true
         run: python update_mag.py
 
       - name: Guardar precios actualizados
