@@ -9,11 +9,11 @@
 html,body{margin:0;padding:0;width:100%;overflow:hidden;background:#fff}
 body{font-family:Georgia,"Times New Roman",serif}
 .ticker{position:relative;width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:42px;line-height:42px}
-.ticker-track{position:absolute;left:0;top:0;display:flex;width:max-content;min-width:max-content;will-change:left}
+.ticker-track{position:absolute;left:0;top:0;display:flex;width:max-content;min-width:max-content}
 .ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 22px;font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600;flex:none}
 .ticker-item .up{color:#20c878}.ticker-item .down{color:#ff3b30}.ticker-item .muted{color:#aaa;font-size:12px}
 .mag-ticker{position:relative;margin-top:0;background:#173f60;color:#fff;height:68px;overflow:hidden}
-.mag-track{position:absolute;left:0;top:0;display:flex;width:max-content;min-width:max-content;will-change:left}
+.mag-track{position:absolute;left:0;top:0;display:flex;width:max-content;min-width:max-content}
 .mag-card{min-width:170px;height:68px;padding:9px 18px;border-right:1px solid rgba(255,255,255,.25);text-align:center;font-family:Georgia,"Times New Roman",serif;flex:none}
 .mag-title{font-size:14px;font-weight:700;display:block}.mag-value{font-size:16px;margin-top:4px;display:block}.mag-change{font-size:12px;margin-left:4px}.mag-change.up{color:#42e08d}.mag-change.down{color:#ff6b6b}.mag-date{min-width:190px}.mag-date small{display:block;color:#cbd7e2;font-size:10px;margin-top:4px}
 @media(max-width:600px){.ticker{height:36px;line-height:36px}.ticker-item{padding:0 14px;font-size:12px}.mag-ticker{height:58px}.mag-card{min-width:135px;height:58px;padding:7px 10px}.mag-title{font-size:11px}.mag-value{font-size:13px;margin-top:3px}.mag-date{min-width:150px}.mag-date small{font-size:9px;margin-top:2px}}
@@ -25,7 +25,7 @@ body{font-family:Georgia,"Times New Roman",serif}
 <script>
 const BCR_URL='data.json';
 const MAG_URL='mag.json';
-let bcrAnim=null,magAnim=null;
+let bcrTimer=null,magTimer=null;
 function fmt(n){return n==null?'S/C':new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(n)}
 function change(v){if(v==null)return '';const cls=v>0?'up':v<0?'down':'';const arrow=v>0?'▲':v<0?'▼':'=';return `<span class="mag-change ${cls}">${arrow} ${Math.abs(v).toFixed(2)}%</span>`}
 function bcrItem(label,value,delta){return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`}</span>`}
@@ -33,30 +33,27 @@ function renderBCR(d){let html='';html+=bcrItem('Soja',d.values.soja,d.changes.s
 function magCard(label,value,delta){return `<span class="mag-card"><span class="mag-title">${label}</span><span class="mag-value">$${Number(value).toLocaleString('es-AR',{minimumFractionDigits:3,maximumFractionDigits:3})}/kg ${change(delta)}</span></span>`}
 function renderMAG(d){let html=`<span class="mag-card mag-date"><span class="mag-title">MAG CAÑUELAS</span><span class="mag-value">${d.date||''}</span><small>Mercado Agroganadero</small></span><span class="mag-card"><span class="mag-title">Cabezas</span><span class="mag-value">${fmt(d.heads)}</span></span>`;html+=magCard('Novillos',d.values.novillos,d.changes.novillos);html+=magCard('Novillitos',d.values.novillitos,d.changes.novillitos);html+=magCard('Vaquillonas',d.values.vaquillonas,d.changes.vaquillonas);html+=magCard('Vacas',d.values.vacas,d.changes.vacas);html+=magCard('Toros',d.values.toros,d.changes.toros);const track=document.getElementById('mag-track');track.innerHTML=html+html;startTicker(track,'mag')}
 function startTicker(track,type){
-  if(type==='bcr'&&bcrAnim)cancelAnimationFrame(bcrAnim);
-  if(type==='mag'&&magAnim)cancelAnimationFrame(magAnim);
+  if(type==='bcr'&&bcrTimer)clearInterval(bcrTimer);
+  if(type==='mag'&&magTimer)clearInterval(magTimer);
   track.style.left='0px';
-  requestAnimationFrame(()=>{
+  setTimeout(function(){
     const half=track.scrollWidth/2;
     if(!half)return;
-    const speed=type==='bcr'?42:32;
-    let x=0,last=performance.now();
-    function frame(now){
-      const dt=Math.min(now-last,80);last=now;x-=speed*dt/1000;
+    const speed=type==='bcr'?0.7:0.55;
+    let x=0;
+    const tick=function(){
+      x-=speed;
       if(x<=-half)x+=half;
-      track.style.left=x+'px';
-      const id=requestAnimationFrame(frame);
-      if(type==='bcr')bcrAnim=id;else magAnim=id;
-    }
-    const id=requestAnimationFrame(frame);
-    if(type==='bcr')bcrAnim=id;else magAnim=id;
-  });
+      track.style.left=Math.round(x*10)/10+'px';
+    };
+    const timer=setInterval(tick,16);
+    if(type==='bcr')bcrTimer=timer;else magTimer=timer;
+  },50);
 }
 async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json());}catch(e){console.error('BCR:',e)}}
 async function loadMAG(){try{const r=await fetch(MAG_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderMAG(await r.json());}catch(e){console.error('MAG:',e)}}
 loadBCR();loadMAG();
 setInterval(loadBCR,1800000);setInterval(loadMAG,1800000);
-window.addEventListener('resize',()=>{const b=document.getElementById('bcr-track'),m=document.getElementById('mag-track');if(b&&b.children.length)startTicker(b,'bcr');if(m&&m.children.length)startTicker(m,'mag')});
 </script>
 </body>
 </html>
