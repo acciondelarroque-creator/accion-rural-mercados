@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Acción Rural - Pizarra</title>
+<title>Acción Rural - Mercados</title>
 <style>
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvetica, sans-serif; }
-#mercados { width: 100%; height: 40px; background: #111; display: flex; align-items: center; overflow: hidden; color: #fff; }
+.marquesina { width: 100%; height: 40px; background: #111; display: flex; align-items: center; overflow: hidden; color: #fff; border-bottom: 1px solid #222; }
 .ventana { width: 100%; height: 40px; overflow: hidden; position: relative; white-space: nowrap; }
-.pista { height: 40px; position: absolute; left: 0; top: 0; display: flex; align-items: center; white-space: nowrap; animation: correr 31s linear infinite; }
+.pista { height: 40px; position: absolute; left: 0; top: 0; display: flex; align-items: center; white-space: nowrap; }
 .item { display: inline-flex; align-items: center; padding: 0 18px; color: #fff; font-size: 13px; font-weight: 600; }
 .producto { color: #8bd0a0; font-weight: 700; margin-right: 7px; }
 .separador { color: #666; margin-left: 18px; }
@@ -20,13 +20,17 @@ html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvet
 .bajo { color: #ff3b30; }
 .igual { color: #aaa; }
 .fuente { color: #aaa; font-size: 11px; font-weight: 500; margin-left: 8px; }
-.seccion { color: #fff; font-weight: 800; font-size: 13px; }
-@keyframes correr { from { transform: translateX(0); } to { transform: translateX(-33.333333%); } }
-#mercados:hover .pista { animation-play-state: paused; }
+.seccion { color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .2px; }
+.bcr { background: #111; }
+.mag { background: #172b3a; }
+.mag .producto { color: #a8d8bb; }
+.mag .seccion { color: #fff; }
+@keyframes correrBcr { from { transform: translateX(0); } to { transform: translateX(-33.333333%); } }
+@keyframes correrMag { from { transform: translateX(0); } to { transform: translateX(-33.333333%); } }
+.marquesina:hover .pista { animation-play-state: paused; }
 @media (max-width: 600px) {
-#mercados, .ventana, .pista { height: 36px; }
+.marquesina, .ventana, .pista { height: 36px; }
 .item { padding: 0 12px; font-size: 11px; }
-.pista { animation-duration: 25s; }
 .fecha { font-size: 12px; }
 .cambio { font-size: 11px; margin-left: 5px; }
 .fuente { font-size: 10px; }
@@ -35,56 +39,131 @@ html, body { margin: 0; padding: 0; background: #111; font-family: Arial, Helvet
 </style>
 </head>
 <body>
-<div id="mercados">
-<div class="ventana"><div class="pista" id="pista"><span class="estado">Actualizando pizarra...</span></div></div>
+
+<!-- MARQUESINA 1: MERCADO DE GRANOS / BCR -->
+<div id="marquesina-bcr" class="marquesina bcr">
+  <div class="ventana">
+    <div class="pista" id="pista-bcr"><span class="estado">Actualizando Mercado de Granos...</span></div>
+  </div>
 </div>
+
+<!-- MARQUESINA 2: MAG CAÑUELAS -->
+<div id="marquesina-mag" class="marquesina mag">
+  <div class="ventana">
+    <div class="pista" id="pista-mag"><span class="estado">Actualizando MAG Cañuelas...</span></div>
+  </div>
+</div>
+
 <script>
 (function () {
-const pista = document.getElementById("pista");
-function precio(valor) { if (valor === null || valor === undefined) return "S/C"; return "$" + Number(valor).toLocaleString("es-AR") + "/tn"; }
-function cambio(valor) {
-  if (valor === null || valor === undefined) return "";
-  if (valor > 0) return '<span class="cambio subio">▲ ' + Math.abs(valor).toFixed(2).replace('.', ',') + '%</span>';
-  if (valor < 0) return '<span class="cambio bajo">▼ ' + Math.abs(valor).toFixed(2).replace('.', ',') + '%</span>';
-  return '<span class="cambio igual">= 0,00%</span>';
-}
-function cabezas(valor) { return Number(valor || 0).toLocaleString("es-AR") + " cabezas"; }
-function mostrar(datos, mag) {
-const productos = [["soja","Soja"],["maiz","Maíz"],["trigo","Trigo"],["girasol","Girasol"],["sorgo","Sorgo"]];
-let html = "";
-html += '<span class="item"><span class="seccion">MERCADO DE GRANOS</span></span>';
-productos.forEach(function (producto) {
-  const clave = producto[0];
-  const nombre = producto[1];
-  html += '<span class="item"><span class="producto">' + nombre + '</span><span>' + precio(datos.values[clave]) + '</span>' + cambio(datos.changes ? datos.changes[clave] : null) + '<span class="separador">●</span></span>';
-});
-if (datos.date) html += '<span class="item"><span class="fecha">Pizarra: ' + datos.date + '</span><span class="fuente">Fuente BCR</span></span>';
+  const pistaBcr = document.getElementById("pista-bcr");
+  const pistaMag = document.getElementById("pista-mag");
 
-if (mag && mag.values) {
-  html += '<span class="item"><span class="seccion">MAG CAÑUELAS</span></span>';
-  const categorias = [["novillos","Novillos"],["novillitos","Novillitos"],["vaquillonas","Vaquillonas"],["vacas","Vacas"],["toros","Toros"]];
-  categorias.forEach(function (categoria) {
-    const clave = categoria[0];
-    const nombre = categoria[1];
-    html += '<span class="item"><span class="producto">' + nombre + '</span><span>' + precio(mag.values[clave]).replace('/tn','/kg') + '</span>' + cambio(mag.changes ? mag.changes[clave] : null) + '<span class="separador">●</span></span>';
-  });
-  if (mag.heads !== undefined && mag.heads !== null) html += '<span class="item"><span class="producto">Cabezas</span><span>' + cabezas(mag.heads) + '</span><span class="separador">●</span></span>';
-  if (mag.date) html += '<span class="item"><span class="fecha">Rueda: ' + mag.date + '</span><span class="fuente">Fuente MAG</span></span>';
-}
+  function precio(valor, unidad) {
+    if (valor === null || valor === undefined) return "S/C";
+    return "$" + Number(valor).toLocaleString("es-AR") + unidad;
+  }
 
-pista.innerHTML = html + html + html;
-pista.style.animation = "none";
-void pista.offsetWidth;
-pista.style.animation = "correr 31s linear infinite";
-}
-function actualizar() {
-  Promise.all([
-    fetch("data.json?v="+Date.now(), {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("No se pudo obtener data.json"); return r.json(); }),
-    fetch("mag.json?v="+Date.now(), {cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("No se pudo obtener mag.json"); return r.json(); })
-  ]).then(function(datos){ mostrar(datos[0], datos[1]); }).catch(function(error){ console.log("Acción Rural mercados:", error); });
-}
-actualizar();
-setInterval(actualizar,30*60*1000);
+  function cambio(valor) {
+    if (valor === null || valor === undefined) return "";
+    if (valor > 0) return '<span class="cambio subio">▲ ' + Math.abs(valor).toFixed(2).replace('.', ',') + '%</span>';
+    if (valor < 0) return '<span class="cambio bajo">▼ ' + Math.abs(valor).toFixed(2).replace('.', ',') + '%</span>';
+    return '<span class="cambio igual">= 0,00%</span>';
+  }
+
+  function cabezas(valor) {
+    return Number(valor || 0).toLocaleString("es-AR");
+  }
+
+  function iniciar(pista, html, duracion) {
+    pista.innerHTML = html + html + html;
+    pista.style.animation = "none";
+    void pista.offsetWidth;
+    pista.style.animation = duracion + "s linear infinite";
+  }
+
+  function mostrarBcr(datos) {
+    const productos = [
+      ["soja", "Soja"],
+      ["maiz", "Maíz"],
+      ["trigo", "Trigo"],
+      ["girasol", "Girasol"],
+      ["sorgo", "Sorgo"]
+    ];
+
+    let html = '<span class="item"><span class="seccion">MERCADO DE GRANOS</span></span>';
+
+    productos.forEach(function (producto) {
+      const clave = producto[0];
+      const nombre = producto[1];
+      html += '<span class="item"><span class="producto">' + nombre + '</span><span>' + precio(datos.values[clave], '/tn') + '</span>' + cambio(datos.changes ? datos.changes[clave] : null) + '<span class="separador">●</span></span>';
+    });
+
+    if (datos.date) {
+      html += '<span class="item"><span class="fecha">Pizarra: ' + datos.date + '</span><span class="fuente">Fuente BCR</span></span>';
+    }
+
+    iniciar(pistaBcr, html, 31);
+  }
+
+  function mostrarMag(mag) {
+    const categorias = [
+      ["novillos", "Novillos"],
+      ["novillitos", "Novillitos"],
+      ["vaquillonas", "Vaquillonas"],
+      ["vacas", "Vacas"],
+      ["toros", "Toros"]
+    ];
+
+    let html = '<span class="item"><span class="seccion">MAG CAÑUELAS</span></span>';
+
+    categorias.forEach(function (categoria) {
+      const clave = categoria[0];
+      const nombre = categoria[1];
+      html += '<span class="item"><span class="producto">' + nombre + '</span><span>' + precio(mag.values[clave], '/kg') + '</span>' + cambio(mag.changes ? mag.changes[clave] : null) + '<span class="separador">●</span></span>';
+    });
+
+    if (mag.heads !== undefined && mag.heads !== null) {
+      html += '<span class="item"><span class="producto">Cabezas</span><span>' + cabezas(mag.heads) + '</span><span class="separador">●</span></span>';
+    }
+
+    if (mag.date) {
+      html += '<span class="item"><span class="fecha">Rueda: ' + mag.date + '</span><span class="fuente">Fuente MAG</span></span>';
+    }
+
+    iniciar(pistaMag, html, 31);
+  }
+
+  function actualizarBcr() {
+    fetch("data.json?v=" + Date.now(), { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) throw new Error("No se pudo obtener data.json");
+        return r.json();
+      })
+      .then(mostrarBcr)
+      .catch(function (error) {
+        console.log("Acción Rural BCR:", error);
+      });
+  }
+
+  function actualizarMag() {
+    fetch("mag.json?v=" + Date.now(), { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) throw new Error("No se pudo obtener mag.json");
+        return r.json();
+      })
+      .then(mostrarMag)
+      .catch(function (error) {
+        console.log("Acción Rural MAG:", error);
+      });
+  }
+
+  actualizarBcr();
+  actualizarMag();
+
+  // Cada fuente se actualiza por separado cada 30 minutos.
+  setInterval(actualizarBcr, 30 * 60 * 1000);
+  setInterval(actualizarMag, 30 * 60 * 1000);
 })();
 </script>
 </body>
