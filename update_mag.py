@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://www.grupoguarino.com.ar/precios-mag/"
 STATE_FILE = "mag_previous.json"
 OUTPUT_FILE = "mag.json"
+SOURCE_ID = "guarino-max-corriente2"
 CATEGORIAS = {
     "novillos": "NOVILLOS",
     "novillitos": "NOVILLITOS",
@@ -61,25 +62,9 @@ def extraer_indice(texto, patron):
 
 
 def obtener_indices(texto):
-    """Extrae los tres índices publicados por Guarino.
-
-    Los valores se toman de la sección de índices de la página actual, que
-    puede mostrar una fecha de último índice operado distinta de la fecha de
-    la jornada de hacienda.
-    """
-    inmag, inmag_change = extraer_indice(
-        texto,
-        r"INMAG\s*-\s*NOVILLO\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%",
-    )
-    igmag, igmag_change = extraer_indice(
-        texto,
-        r"IGMAG\s*-\s*GENERAL\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%",
-    )
-    arr, arr_change = extraer_indice(
-        texto,
-        r"ÍNDICE\s+SUGERIDO\s+ARRENDAMIENTOS\s+RURALES\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%",
-    )
-
+    inmag, inmag_change = extraer_indice(texto, r"INMAG\s*-\s*NOVILLO\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%")
+    igmag, igmag_change = extraer_indice(texto, r"IGMAG\s*-\s*GENERAL\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%")
+    arr, arr_change = extraer_indice(texto, r"ÍNDICE\s+SUGERIDO\s+ARRENDAMIENTOS\s+RURALES\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%")
     return {
         "inmag_novillo": inmag,
         "igmag_general": igmag,
@@ -98,9 +83,8 @@ def obtener_ultima_rueda():
 
     fecha_match = re.search(r"(\d{1,2}) de ([a-záéíóú]+) de (\d{4})", texto, re.IGNORECASE)
     meses = {
-        "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
-        "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
-        "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
+        "enero": "01", "febrero": "02", "marzo": "03", "abril": "04", "mayo": "05", "junio": "06",
+        "julio": "07", "agosto": "08", "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
     }
     fecha_publicada = None
     if fecha_match:
@@ -118,23 +102,19 @@ def obtener_ultima_rueda():
 
     valores = {clave: None for clave in CATEGORIAS}
     categoria_actual = None
-
     for fila in tabla.find_all("tr"):
         celdas = [limpiar_token(c.get_text(" ", strip=True)) for c in fila.find_all(["th", "td"])]
         if not celdas:
             continue
-
         primera = celdas[0].upper()
         for clave, nombre in CATEGORIAS.items():
             if primera == nombre:
                 categoria_actual = clave
                 break
-
         if categoria_actual is None or len(celdas) < 4:
             continue
-
-        # Guarino: Categoría | Mín. Corriente | Máx. Corriente | Máximos | Kilos
-        # Usamos Máx. Corriente, es decir, "Corriente 2".
+        # Guarino: Categoría | Mín. Corriente | Máx. Corriente | Máximos | Kilos.
+        # Corriente 2 = Máx. Corriente.
         valor = numero_argentino(celdas[2])
         if valor is not None:
             if valores[categoria_actual] is None or valor > valores[categoria_actual]:
@@ -178,11 +158,16 @@ def main():
     fecha_publicada, valores, cabezas, indices, indices_changes = obtener_ultima_rueda()
     anterior = cargar_anterior()
 
-    if fecha_publicada == anterior.get("date"):
+    if fecha_publicada == anterior.get("date") and anterior.get("source_id") == SOURCE_ID:
         print(f"MAG: sin rueda nueva ({fecha_publicada}). Se conservan mag.json y mag_previous.json.")
         return
 
-    cambios = calcular_variaciones(valores, anterior.get("values", {}))
+    # IMPORTANTE: el archivo anterior podía provenir del viejo parser del MAG.
+    # No comparamos jamás una fuente con la otra. La primera ejecución con
+    # Guarino establece una nueva línea de base y deja las variaciones en S/C.
+    misma_fuente = anterior.get("source_id") == SOURCE_ID
+    cambios = calcular_variaciones(valores, anterior.get("values", {})) if misma_fuente else {clave: None for clave in valores}
+
     datos = {
         "updated": datetime.now(timezone.utc).isoformat(),
         "source": "Guarino Producciones · Mercado Agroganadero de Cañuelas (MAG)",
@@ -198,7 +183,13 @@ def main():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=2)
     with open(STATE_FILE, "w", encoding="utf-8") as archivo:
-        json.dump({"values": valores, "heads": cabezas, "date": fecha_publicada, "indices": indices}, archivo, ensure_ascii=False, indent=2)
+        json.dump({
+            "source_id": SOURCE_ID,
+            "values": valores,
+            "heads": cabezas,
+            "date": fecha_publicada,
+            "indices": indices,
+        }, archivo, ensure_ascii=False, indent=2)
 
     print(json.dumps(datos, ensure_ascii=False, indent=2))
 
