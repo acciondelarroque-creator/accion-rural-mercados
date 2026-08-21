@@ -12,10 +12,10 @@
     "toros": 3300.0
   },
   "changes": {
-    "novillos": 11.6,
-    "novillitos": 12.66,
-    "vaquillonas": 20.21,
-    "vacas": 22.92,
-    "toros": 8.93
+    "novillos": null,
+    "novillitos": null,
+    "vaquillonas": null,
+    "vacas": null,
+    "toros": null
   }
 }
