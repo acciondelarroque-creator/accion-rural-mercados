@@ -5,46 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Acción Rural - Mercados</title>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;width:100%;overflow:hidden;background:#fff}
-body{font-family:Georgia,"Times New Roman",serif}
-.ticker{position:relative;width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:42px;line-height:42px}
-.ticker-track{position:absolute;left:0;top:0;display:flex;width:max-content;min-width:max-content}
-.ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 22px;font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600;flex:none}
-.ticker-item .up{color:#20c878}.ticker-item .down{color:#ff3b30}.ticker-item .muted{color:#aaa;font-size:12px}
-.mag-ticker{position:relative;margin-top:0;background:#173f60;color:#fff;height:68px;overflow:hidden}
-.mag-track{position:absolute;left:0;top:0;display:flex;width:max-content;min-width:max-content}
-.mag-card{min-width:170px;height:68px;padding:9px 18px;border-right:1px solid rgba(255,255,255,.25);text-align:center;font-family:Georgia,"Times New Roman",serif;flex:none}
-.mag-title{font-size:14px;font-weight:700;display:block}.mag-value{font-size:16px;margin-top:4px;display:block}.mag-change{font-size:12px;margin-left:4px}.mag-change.up{color:#42e08d}.mag-change.down{color:#ff6b6b}.mag-date{min-width:190px}.mag-date small{display:block;color:#cbd7e2;font-size:10px;margin-top:4px}
-@media(max-width:600px){.ticker{height:36px;line-height:36px}.ticker-item{padding:0 14px;font-size:12px}.mag-ticker{height:58px}.mag-card{min-width:135px;height:58px;padding:7px 10px}.mag-title{font-size:11px}.mag-value{font-size:13px;margin-top:3px}.mag-date{min-width:150px}.mag-date small{font-size:9px;margin-top:2px}}
+*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;overflow:hidden;background:#fff}body{font-family:Georgia,"Times New Roman",serif}.ticker{position:relative;width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:42px;line-height:42px}.ticker-track{position:absolute;left:0;top:0;display:flex;width:max-content;min-width:max-content}.ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 22px;font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600;flex:none}.ticker-item .up{color:#20c878}.ticker-item .down{color:#ff3b30}.ticker-item .muted{color:#aaa;font-size:12px}.mag-ticker{position:relative;margin-top:0;background:#173f60;color:#fff;height:68px;overflow:hidden}.mag-track{position:absolute;left:0;top:0;display:flex;width:max-content;min-width:max-content}.mag-card{min-width:170px;height:68px;padding:9px 18px;border-right:1px solid rgba(255,255,255,.25);text-align:center;font-family:Georgia,"Times New Roman",serif;flex:none}.mag-title{font-size:14px;font-weight:700;display:block}.mag-value{font-size:16px;margin-top:4px;display:block}.mag-date{min-width:190px}.mag-date small{display:block;color:#cbd7e2;font-size:10px;margin-top:4px}.mag-group{min-width:180px}.mag-index{min-width:190px}@media(max-width:600px){.ticker{height:36px;line-height:36px}.ticker-item{padding:0 14px;font-size:12px}.mag-ticker{height:58px}.mag-card{min-width:135px;height:58px;padding:7px 10px}.mag-title{font-size:11px}.mag-value{font-size:13px;margin-top:3px}.mag-date{min-width:150px}.mag-group{min-width:145px}.mag-index{min-width:155px}.mag-date small{font-size:9px;margin-top:2px}}
 </style>
 </head>
 <body>
 <div id="bcr" class="ticker" aria-label="Mercado de granos BCR"><div id="bcr-track" class="ticker-track"></div></div>
 <div id="mag" class="mag-ticker" aria-label="Mercado Agroganadero de Cañuelas"><div id="mag-track" class="mag-track"></div></div>
 <script>
-const BCR_URL='data.json';
-const MAG_URL='mag.json';
-let bcrTimer=null,magTimer=null;
+const BCR_URL='data.json',MAG_URL='mag.json';let bcrTimer=null,magTimer=null;
 function fmt(n){return n==null?'S/C':new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(n)}
 function fmtIndex(n){return n==null?'S/C':Number(n).toLocaleString('es-AR',{minimumFractionDigits:3,maximumFractionDigits:3})}
-function change(v){if(v==null)return '';const cls=v>0?'up':v<0?'down':'';const arrow=v>0?'▲':v<0?'▼':'=';return `<span class="mag-change ${cls}">${arrow} ${Math.abs(v).toFixed(2)}%</span>`}
 function bcrItem(label,value,delta){return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`}</span>`}
 function renderBCR(d){let html='';html+=bcrItem('Soja',d.values.soja,d.changes.soja);html+=bcrItem('Maíz',d.values.maiz,d.changes.maiz);html+=bcrItem('Trigo',d.values.trigo,d.changes.trigo);html+=bcrItem('Girasol',d.values.girasol,d.changes.girasol);html+=bcrItem('Sorgo',d.values.sorgo,d.changes.sorgo);html+=`<span class="ticker-item"><b>Pizarra: ${d.date||''}</b> <span class="muted">Fuente BCR</span></span>`;const track=document.getElementById('bcr-track');track.innerHTML=html+html;startTicker(track,'bcr')}
-function magCard(label,value,delta){const mostrado=value==null?'S/C':`$${Number(value).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0})}/kg`;return `<span class="mag-card"><span class="mag-title">${label}</span><span class="mag-value">${mostrado} ${change(delta)}</span></span>`}
-function indexCard(label,value,delta){return `<span class="mag-card"><span class="mag-title">${label}</span><span class="mag-value">${fmtIndex(value)} ${change(delta)}</span></span>`}
-function renderMAG(d){let html=`<span class="mag-card mag-date"><span class="mag-title">MAG CAÑUELAS</span><span class="mag-value">${d.date||''}</span><small>Guarino Producciones</small></span><span class="mag-card"><span class="mag-title">Cabezas</span><span class="mag-value">${fmt(d.heads)}</span></span><span class="mag-card"><span class="mag-title">CORRIENTES MÁXIMOS</span><span class="mag-value">Corriente 2 · Máx. Corriente</span></span>`;
-if(d.indices){html+=indexCard('INMAG – Novillo',d.indices.inmag_novillo,d.indices_changes?.inmag_novillo);html+=indexCard('IGMAG – General',d.indices.igmag_general,d.indices_changes?.igmag_general);html+=indexCard('Índice de Arrendamiento',d.indices.arrendamiento,d.indices_changes?.arrendamiento)}
-const order=[
-['Novillos 431/460','novillos_431_460'],['Novillos 461/490','novillos_461_490'],['Novillos 491/520','novillos_491_520'],['Novillos +520','novillos_mas_520'],['Novillos regulares','novillos_regulares'],
-['Novillitos 300/350','novillitos_300_350'],['Novillitos 351/390','novillitos_351_390'],['Novillitos 391/430','novillitos_391_430'],['Novillitos regulares','novillitos_regulares'],
-['Vaquillonas 300/350','vaquillonas_300_350'],['Vaquillonas 351/390','vaquillonas_351_390'],['Vaquillonas 391/430','vaquillonas_391_430'],['Vaquillonas regulares','vaquillonas_regulares'],
-['Vacas buenas a especiales','vacas_buenas_especiales'],['Vacas regulares','vacas_regulares'],
-['Toros buenos a especiales','toros_buenos_especiales'],['Toros regulares','toros_regulares']
-];
-for(const [label,key] of order){html+=magCard(label,d.values?.[key],d.changes?.[key])}
-const track=document.getElementById('mag-track');track.innerHTML=html+html;startTicker(track,'mag')}
-function startTicker(track,type){if(type==='bcr'&&bcrTimer)clearInterval(bcrTimer);if(type==='mag'&&magTimer)clearInterval(magTimer);track.style.left='0px';setTimeout(function(){const half=track.scrollWidth/2;if(!half)return;const speed=type==='bcr'?0.7:0.7;let x=0;const tick=function(){x-=speed;if(x<=-half)x+=half;track.style.left=Math.round(x*10)/10+'px'};const timer=setInterval(tick,16);if(type==='bcr')bcrTimer=timer;else magTimer=timer},50)}
+function magGroup(label,value){const mostrado=value==null?'S/C':`$${Number(value).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0})}/kg`;return `<span class="mag-card mag-group"><span class="mag-title">${label}</span><span class="mag-value">${mostrado}</span></span>`}
+function indexCard(label,value){return `<span class="mag-card mag-index"><span class="mag-title">${label}</span><span class="mag-value">${fmtIndex(value)}</span></span>`}
+function renderMAG(d){let html=`<span class="mag-card mag-date"><span class="mag-title">MAG CAÑUELAS</span><span class="mag-value">${d.date||''}</span><small>Guarino Producciones</small></span><span class="mag-card"><span class="mag-title">Cabezas</span><span class="mag-value">${fmt(d.heads)}</span></span>`;const g=d.group_values||{};html+=magGroup('Novillos',g.NOVILLOS);html+=magGroup('Novillitos',g.NOVILLITOS);html+=magGroup('Vaquillonas',g.VAQUILLONAS);html+=magGroup('Vacas',g.VACAS);html+=magGroup('Toros',g.TOROS);if(d.indices){html+=indexCard('INMAG – Novillo',d.indices.inmag_novillo);html+=indexCard('IGMAG – General',d.indices.igmag_general);html+=indexCard('Índice de Arrendamiento',d.indices.arrendamiento)}const track=document.getElementById('mag-track');track.innerHTML=html+html;startTicker(track,'mag')}
+function startTicker(track,type){if(type==='bcr'&&bcrTimer)clearInterval(bcrTimer);if(type==='mag'&&magTimer)clearInterval(magTimer);track.style.left='0px';setTimeout(function(){const half=track.scrollWidth/2;if(!half)return;const speed=type==='bcr'?0.7:0.8;let x=0;const tick=function(){x-=speed;if(x<=-half)x+=half;track.style.left=Math.round(x*10)/10+'px'};const timer=setInterval(tick,16);if(type==='bcr')bcrTimer=timer;else magTimer=timer},50)}
 async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json())}catch(e){console.error('BCR:',e)}}
 async function loadMAG(){try{const r=await fetch(MAG_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderMAG(await r.json())}catch(e){console.error('MAG:',e)}}
 loadBCR();loadMAG();setInterval(loadBCR,1800000);setInterval(loadMAG,1800000);
