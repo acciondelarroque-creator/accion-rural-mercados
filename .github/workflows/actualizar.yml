@@ -5,12 +5,17 @@ on:
     # Cada 30 minutos, lunes a viernes.
     - cron: "*/30 * * * 1-5"
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
   actualizar:
+    # Evita que el propio commit de actualización dispare otra ejecución.
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, 'Actualizar mercados locales')
     runs-on: ubuntu-latest
 
     steps:
