@@ -46,6 +46,51 @@ def encontrar_tabla(soup):
     return None
 
 
+def extraer_indice(texto, patron):
+    match = re.search(patron, texto, re.IGNORECASE)
+    if not match:
+        return None, None
+    valor = numero_argentino(match.group(1))
+    variacion = None
+    if len(match.groups()) >= 2 and match.group(2):
+        try:
+            variacion = float(match.group(2).replace("%", "").replace(",", "."))
+        except ValueError:
+            pass
+    return valor, variacion
+
+
+def obtener_indices(texto):
+    """Extrae los tres índices publicados por Guarino.
+
+    Los valores se toman de la sección de índices de la página actual, que
+    puede mostrar una fecha de último índice operado distinta de la fecha de
+    la jornada de hacienda.
+    """
+    inmag, inmag_change = extraer_indice(
+        texto,
+        r"INMAG\s*-\s*NOVILLO\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%",
+    )
+    igmag, igmag_change = extraer_indice(
+        texto,
+        r"IGMAG\s*-\s*GENERAL\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%",
+    )
+    arr, arr_change = extraer_indice(
+        texto,
+        r"ÍNDICE\s+SUGERIDO\s+ARRENDAMIENTOS\s+RURALES\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%",
+    )
+
+    return {
+        "inmag_novillo": inmag,
+        "igmag_general": igmag,
+        "arrendamiento": arr,
+    }, {
+        "inmag_novillo": inmag_change,
+        "igmag_general": igmag_change,
+        "arrendamiento": arr_change,
+    }
+
+
 def obtener_ultima_rueda():
     html = obtener_pagina()
     soup = BeautifulSoup(html, "html.parser")
@@ -100,7 +145,12 @@ def obtener_ultima_rueda():
     if all(valor is None for valor in valores.values()):
         raise RuntimeError("La tabla MAG de Guarino no contiene valores de Máx. Corriente")
 
-    return fecha_publicada, valores, cabezas
+    indices, indices_changes = obtener_indices(texto)
+    if any(valor is None for valor in indices.values()):
+        faltantes = [clave for clave, valor in indices.items() if valor is None]
+        raise RuntimeError(f"No se encontraron los índices MAG: {', '.join(faltantes)}")
+
+    return fecha_publicada, valores, cabezas, indices, indices_changes
 
 
 def cargar_anterior():
@@ -125,7 +175,7 @@ def calcular_variaciones(actual, anterior):
 
 
 def main():
-    fecha_publicada, valores, cabezas = obtener_ultima_rueda()
+    fecha_publicada, valores, cabezas, indices, indices_changes = obtener_ultima_rueda()
     anterior = cargar_anterior()
 
     if fecha_publicada == anterior.get("date"):
@@ -141,12 +191,14 @@ def main():
         "heads": cabezas,
         "values": valores,
         "changes": cambios,
+        "indices": indices,
+        "indices_changes": indices_changes,
     }
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=2)
     with open(STATE_FILE, "w", encoding="utf-8") as archivo:
-        json.dump({"values": valores, "heads": cabezas, "date": fecha_publicada}, archivo, ensure_ascii=False, indent=2)
+        json.dump({"values": valores, "heads": cabezas, "date": fecha_publicada, "indices": indices}, archivo, ensure_ascii=False, indent=2)
 
     print(json.dumps(datos, ensure_ascii=False, indent=2))
 
