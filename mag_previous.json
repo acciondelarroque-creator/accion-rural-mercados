@@ -1,5 +1,5 @@
 {
-  "source_id": "guarino-max-corriente2-categorias-v3",
+  "source_id": "guarino-max-corriente2-grupos-v4",
   "values": {
     "novillos_431_460": 4700.0,
     "novillos_461_490": 4700.0,
@@ -18,6 +18,13 @@
     "vacas_regulares": 3300.0,
     "toros_buenos_especiales": 3300.0,
     "toros_regulares": null
+  },
+  "group_values": {
+    "NOVILLOS": 4533.33,
+    "NOVILLITOS": 4933.33,
+    "VAQUILLONAS": 4833.33,
+    "VACAS": 3500.0,
+    "TOROS": 3300.0
   },
   "heads": 5889,
   "date": "21/08/2026",

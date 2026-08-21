@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-21T17:13:28.737094+00:00",
+  "updated": "2026-08-21T18:35:09.756364+00:00",
   "source": "Guarino Producciones · Mercado Agroganadero de Cañuelas (MAG)",
   "url": "https://www.grupoguarino.com.ar/precios-mag/",
   "date": "21/08/2026",
@@ -54,6 +54,13 @@
       "toros_regulares"
     ]
   },
+  "group_values": {
+    "NOVILLOS": 4533.33,
+    "NOVILLITOS": 4933.33,
+    "VAQUILLONAS": 4833.33,
+    "VACAS": 3500.0,
+    "TOROS": 3300.0
+  },
   "values": {
     "novillos_431_460": 4700.0,
     "novillos_461_490": 4700.0,
@@ -74,23 +81,11 @@
     "toros_regulares": null
   },
   "changes": {
-    "novillos_431_460": null,
-    "novillos_461_490": null,
-    "novillos_491_520": null,
-    "novillos_mas_520": null,
-    "novillos_regulares": null,
-    "novillitos_300_350": null,
-    "novillitos_351_390": null,
-    "novillitos_391_430": null,
-    "novillitos_regulares": null,
-    "vaquillonas_300_350": null,
-    "vaquillonas_351_390": null,
-    "vaquillonas_391_430": null,
-    "vaquillonas_regulares": null,
-    "vacas_buenas_especiales": null,
-    "vacas_regulares": null,
-    "toros_buenos_especiales": null,
-    "toros_regulares": null
+    "NOVILLOS": null,
+    "NOVILLITOS": null,
+    "VAQUILLONAS": null,
+    "VACAS": null,
+    "TOROS": null
   },
   "indices": {
     "inmag_novillo": 4312.21,
