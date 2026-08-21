@@ -31,31 +31,20 @@ function fmtIndex(n){return n==null?'S/C':Number(n).toLocaleString('es-AR',{mini
 function change(v){if(v==null)return '';const cls=v>0?'up':v<0?'down':'';const arrow=v>0?'▲':v<0?'▼':'=';return `<span class="mag-change ${cls}">${arrow} ${Math.abs(v).toFixed(2)}%</span>`}
 function bcrItem(label,value,delta){return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`}</span>`}
 function renderBCR(d){let html='';html+=bcrItem('Soja',d.values.soja,d.changes.soja);html+=bcrItem('Maíz',d.values.maiz,d.changes.maiz);html+=bcrItem('Trigo',d.values.trigo,d.changes.trigo);html+=bcrItem('Girasol',d.values.girasol,d.changes.girasol);html+=bcrItem('Sorgo',d.values.sorgo,d.changes.sorgo);html+=`<span class="ticker-item"><b>Pizarra: ${d.date||''}</b> <span class="muted">Fuente BCR</span></span>`;const track=document.getElementById('bcr-track');track.innerHTML=html+html;startTicker(track,'bcr')}
-function magCard(label,value,delta){const mostrado=value==null?'S/C':`$${Number(value).toLocaleString('es-AR',{minimumFractionDigits:3,maximumFractionDigits:3})}/kg`;return `<span class="mag-card"><span class="mag-title">${label}</span><span class="mag-value">${mostrado} ${change(delta)}</span></span>`}
+function magCard(label,value,delta){const mostrado=value==null?'S/C':`$${Number(value).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0})}/kg`;return `<span class="mag-card"><span class="mag-title">${label}</span><span class="mag-value">${mostrado} ${change(delta)}</span></span>`}
 function indexCard(label,value,delta){return `<span class="mag-card"><span class="mag-title">${label}</span><span class="mag-value">${fmtIndex(value)} ${change(delta)}</span></span>`}
-function renderMAG(d){let html=`<span class="mag-card mag-date"><span class="mag-title">MAG CAÑUELAS</span><span class="mag-value">${d.date||''}</span><small>Guarino Producciones</small></span><span class="mag-card"><span class="mag-title">Cabezas</span><span class="mag-value">${fmt(d.heads)}</span></span>`;if(d.indices){html+=indexCard('INMAG – Novillo',d.indices.inmag_novillo,d.indices_changes?.inmag_novillo);html+=indexCard('IGMAG – General',d.indices.igmag_general,d.indices_changes?.igmag_general);html+=indexCard('Índice de Arrendamiento',d.indices.arrendamiento,d.indices_changes?.arrendamiento)}html+=magCard('Novillos',d.values.novillos,d.changes.novillos);html+=magCard('Novillitos',d.values.novillitos,d.changes.novillitos);html+=magCard('Vaquillonas',d.values.vaquillonas,d.changes.vaquillonas);html+=magCard('Vacas',d.values.vacas,d.changes.vacas);html+=magCard('Toros',d.values.toros,d.changes.toros);const track=document.getElementById('mag-track');track.innerHTML=html+html;startTicker(track,'mag')}
-function startTicker(track,type){
-  if(type==='bcr'&&bcrTimer)clearInterval(bcrTimer);
-  if(type==='mag'&&magTimer)clearInterval(magTimer);
-  track.style.left='0px';
-  setTimeout(function(){
-    const half=track.scrollWidth/2;
-    if(!half)return;
-    const speed=type==='bcr'?0.7:0.55;
-    let x=0;
-    const tick=function(){
-      x-=speed;
-      if(x<=-half)x+=half;
-      track.style.left=Math.round(x*10)/10+'px';
-    };
-    const timer=setInterval(tick,16);
-    if(type==='bcr')bcrTimer=timer;else magTimer=timer;
-  },50);
-}
-async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json());}catch(e){console.error('BCR:',e)}}
-async function loadMAG(){try{const r=await fetch(MAG_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderMAG(await r.json());}catch(e){console.error('MAG:',e)}}
-loadBCR();loadMAG();
-setInterval(loadBCR,1800000);setInterval(loadMAG,1800000);
+function renderMAG(d){let html=`<span class="mag-card mag-date"><span class="mag-title">MAG CAÑUELAS</span><span class="mag-value">${d.date||''}</span><small>Guarino Producciones · Corrientes Máximos</small></span><span class="mag-card"><span class="mag-title">Cabezas</span><span class="mag-value">${fmt(d.heads)}</span></span>`;
+if(d.indices){html+=indexCard('INMAG – Novillo',d.indices.inmag_novillo,d.indices_changes?.inmag_novillo);html+=indexCard('IGMAG – General',d.indices.igmag_general,d.indices_changes?.igmag_general);html+=indexCard('Índice de Arrendamiento',d.indices.arrendamiento,d.indices_changes?.arrendamiento)}
+html+=magCard('Novillos 431/460',d.values.novillos_431_460,d.changes.novillos_431_460);html+=magCard('Novillos 461/490',d.values.novillos_461_490,d.changes.novillos_461_490);html+=magCard('Novillos 491/520',d.values.novillos_491_520,d.changes.novillos_491_520);html+=magCard('Novillos +520',d.values.novillos_mas_520,d.changes.novillos_mas_520);html+=magCard('Novillos regulares',d.values.novillos_regulares,d.changes.novillos_regulares);
+html+=magCard('Novillitos 300/350',d.values.novillitos_300_350,d.changes.novillitos_300_350);html+=magCard('Novillitos 351/390',d.values.novillitos_351_390,d.changes.novillitos_351_390);html+=magCard('Novillitos 391/430',d.values.novillitos_391_430,d.changes.novillitos_391_430);html+=magCard('Novillitos regulares',d.values.novillitos_regulares,d.changes.novillitos_regulares);
+html+=magCard('Vaquillonas 300/350',d.values.vaquillonas_300_350,d.changes.vaquillonas_300_350);html+=magCard('Vaquillonas 351/390',d.values.vaquillonas_351_390,d.changes.vaquillonas_351_390);html+=magCard('Vaquillonas 391/430',d.values.vaquillonas_391_430,d.changes.vaquillonas_391_430);html+=magCard('Vaquillonas regulares',d.values.vaquillonas_regulares,d.changes.vaquillonas_regulares);
+html+=magCard('Vacas buenas a especiales',d.values.vacas_buenas_especiales,d.changes.vacas_buenas_especiales);html+=magCard('Vacas regulares',d.values.vacas_regulares,d.changes.vacas_regulares);
+html+=magCard('Toros buenos a especiales',d.values.toros_buenos_especiales,d.changes.toros_buenos_especiales);html+=magCard('Toros regulares',d.values.toros_regulares,d.changes.toros_regulares);
+const track=document.getElementById('mag-track');track.innerHTML=html+html;startTicker(track,'mag')}
+function startTicker(track,type){if(type==='bcr'&&bcrTimer)clearInterval(bcrTimer);if(type==='mag'&&magTimer)clearInterval(magTimer);track.style.left='0px';setTimeout(function(){const half=track.scrollWidth/2;if(!half)return;const speed=type==='bcr'?0.7:0.55;let x=0;const tick=function(){x-=speed;if(x<=-half)x+=half;track.style.left=Math.round(x*10)/10+'px'};const timer=setInterval(tick,16);if(type==='bcr')bcrTimer=timer;else magTimer=timer},50)}
+async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json())}catch(e){console.error('BCR:',e)}}
+async function loadMAG(){try{const r=await fetch(MAG_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderMAG(await r.json())}catch(e){console.error('MAG:',e)}}
+loadBCR();loadMAG();setInterval(loadBCR,1800000);setInterval(loadMAG,1800000);
 </script>
 </body>
 </html>
