@@ -1,21 +1,105 @@
 {
-  "updated": "2026-08-21T16:58:35.849815+00:00",
+  "updated": "2026-08-21T17:13:28.737094+00:00",
   "source": "Guarino Producciones · Mercado Agroganadero de Cañuelas (MAG)",
   "url": "https://www.grupoguarino.com.ar/precios-mag/",
   "date": "21/08/2026",
   "heads": 5889,
+  "label": "Corrientes Máximos",
+  "source_field": "Máx. Corriente (Corriente 2)",
+  "categories": {
+    "novillos_431_460": "Novillos 431/460",
+    "novillos_461_490": "Novillos 461/490",
+    "novillos_491_520": "Novillos 491/520",
+    "novillos_mas_520": "Novillos +520",
+    "novillos_regulares": "Novillos regulares",
+    "novillitos_300_350": "Novillitos 300/350",
+    "novillitos_351_390": "Novillitos 351/390",
+    "novillitos_391_430": "Novillitos 391/430",
+    "novillitos_regulares": "Novillitos regulares",
+    "vaquillonas_300_350": "Vaquillonas 300/350",
+    "vaquillonas_351_390": "Vaquillonas 351/390",
+    "vaquillonas_391_430": "Vaquillonas 391/430",
+    "vaquillonas_regulares": "Vaquillonas regulares",
+    "vacas_buenas_especiales": "Vacas (buenas a especiales)",
+    "vacas_regulares": "Vacas regulares",
+    "toros_buenos_especiales": "Toros (buenos a especiales)",
+    "toros_regulares": "Toros regulares"
+  },
+  "groups": {
+    "NOVILLOS": [
+      "novillos_431_460",
+      "novillos_461_490",
+      "novillos_491_520",
+      "novillos_mas_520",
+      "novillos_regulares"
+    ],
+    "NOVILLITOS": [
+      "novillitos_300_350",
+      "novillitos_351_390",
+      "novillitos_391_430",
+      "novillitos_regulares"
+    ],
+    "VAQUILLONAS": [
+      "vaquillonas_300_350",
+      "vaquillonas_351_390",
+      "vaquillonas_391_430",
+      "vaquillonas_regulares"
+    ],
+    "VACAS": [
+      "vacas_buenas_especiales",
+      "vacas_regulares"
+    ],
+    "TOROS": [
+      "toros_buenos_especiales",
+      "toros_regulares"
+    ]
+  },
   "values": {
-    "novillos": 4700.0,
-    "novillitos": 5300.0,
-    "vaquillonas": 5300.0,
-    "vacas": 3700.0,
-    "toros": 3300.0
+    "novillos_431_460": 4700.0,
+    "novillos_461_490": 4700.0,
+    "novillos_491_520": null,
+    "novillos_mas_520": null,
+    "novillos_regulares": 4200.0,
+    "novillitos_300_350": null,
+    "novillitos_351_390": 5300.0,
+    "novillitos_391_430": 5000.0,
+    "novillitos_regulares": 4500.0,
+    "vaquillonas_300_350": 5300.0,
+    "vaquillonas_351_390": 4800.0,
+    "vaquillonas_391_430": null,
+    "vaquillonas_regulares": 4400.0,
+    "vacas_buenas_especiales": 3700.0,
+    "vacas_regulares": 3300.0,
+    "toros_buenos_especiales": 3300.0,
+    "toros_regulares": null
   },
   "changes": {
-    "novillos": null,
-    "novillitos": null,
-    "vaquillonas": null,
-    "vacas": null,
-    "toros": null
+    "novillos_431_460": null,
+    "novillos_461_490": null,
+    "novillos_491_520": null,
+    "novillos_mas_520": null,
+    "novillos_regulares": null,
+    "novillitos_300_350": null,
+    "novillitos_351_390": null,
+    "novillitos_391_430": null,
+    "novillitos_regulares": null,
+    "vaquillonas_300_350": null,
+    "vaquillonas_351_390": null,
+    "vaquillonas_391_430": null,
+    "vaquillonas_regulares": null,
+    "vacas_buenas_especiales": null,
+    "vacas_regulares": null,
+    "toros_buenos_especiales": null,
+    "toros_regulares": null
+  },
+  "indices": {
+    "inmag_novillo": 4312.21,
+    "igmag_general": 3680.25,
+    "arrendamiento": 4372.88
+  },
+  "indices_changes": {
+    "inmag_novillo": 0.0,
+    "igmag_general": -1.4,
+    "arrendamiento": 2.0
   }
 }
