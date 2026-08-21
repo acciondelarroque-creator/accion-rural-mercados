@@ -37,20 +37,27 @@ def limpiar_lineas(html):
 
 
 def numero_argentino(token):
-    token = token.strip()
+    token = token.strip().lstrip("$")
     if not re.fullmatch(r"\d[\d.]*,\d{3}", token):
         return None
     return float(token.replace(".", "").replace(",", "."))
 
 
 def numero_entero(token):
-    token = token.strip().replace(".", "")
+    token = token.strip().lstrip("$").replace(".", "")
     if not re.fullmatch(r"\d+", token):
         return None
     return int(token)
 
 
 def encontrar_promedios(lineas):
+    """Extrae el promedio consolidado de cada categoría.
+
+    El MAG cambió recientemente la forma en que devuelve el HTML de la
+    consulta histórica. Primero intentamos el formato anterior y luego un
+    formato alternativo en el que la fila subtotal comienza directamente con
+    el promedio, sin la línea de separadores que usaba el parser original.
+    """
     nombres = [nombre for _, nombre in CATEGORIAS]
     resultados = {}
 
@@ -65,8 +72,10 @@ def encontrar_promedios(lineas):
             if pos is not None:
                 siguientes.append(pos)
         fin = min(siguientes) if siguientes else len(lineas)
-
         bloque = lineas[inicio:fin]
+
+        # Formato anterior: después de una línea de guiones aparece la fila
+        # subtotal y el primer número es el promedio consolidado.
         for i, linea in enumerate(bloque[:-1]):
             if linea.replace(" ", "") and set(linea.replace(" ", "")) <= {"-"}:
                 tokens = bloque[i + 1].split()
@@ -76,12 +85,26 @@ def encontrar_promedios(lineas):
                         resultados[clave] = valor
                         break
 
+        if clave in resultados:
+            continue
+
+        # Formato nuevo: la fila subtotal comienza con el promedio. Buscamos
+        # desde el final del bloque para evitar confundirla con las filas de
+        # detalle, que comienzan con el nombre de la subcategoría.
+        for linea in reversed(bloque):
+            tokens = linea.replace("|", " ").split()
+            if not tokens:
+                continue
+            valor = numero_argentino(tokens[0])
+            if valor is not None:
+                resultados[clave] = valor
+                break
+
     return resultados
 
 
 def encontrar_cabezas_totales(lineas):
-    """Encuentra las cabezas totales tanto si la fila está en una sola línea
-    como si el extractor HTML la separa en dos líneas."""
+    """Encuentra las cabezas totales, tolerando las dos estructuras HTML."""
     for i, linea in enumerate(lineas):
         if not linea.upper().startswith("TOTALES"):
             continue
@@ -100,7 +123,36 @@ def encontrar_cabezas_totales(lineas):
                 if siguiente.startswith("$"):
                     return valor
 
-    return None
+    # En algunas respuestas del MAG la fila TOTALES dejó de aparecer en el
+    # texto extraído. En ese caso, sumamos las cabezas de las cinco filas
+    # consolidadas. En esas filas el segundo campo es la cantidad de cabezas.
+    nombres = [nombre for _, nombre in CATEGORIAS]
+    total = 0
+    encontradas = 0
+
+    for indice, (clave, nombre) in enumerate(CATEGORIAS):
+        inicio = next((i for i, linea in enumerate(lineas) if linea.upper().startswith(nombre)), None)
+        if inicio is None:
+            continue
+        siguientes = []
+        for siguiente in nombres[indice + 1:]:
+            pos = next((i for i in range(inicio + 1, len(lineas)) if lineas[i].upper().startswith(siguiente)), None)
+            if pos is not None:
+                siguientes.append(pos)
+        fin = min(siguientes) if siguientes else len(lineas)
+
+        for linea in reversed(lineas[inicio:fin]):
+            tokens = linea.replace("|", " ").split()
+            if len(tokens) < 2:
+                continue
+            promedio = numero_argentino(tokens[0])
+            cabezas = numero_entero(tokens[1])
+            if promedio is not None and cabezas is not None:
+                total += cabezas
+                encontradas += 1
+                break
+
+    return total if encontradas == len(CATEGORIAS) else None
 
 
 def extraer_fecha_publicada(lineas):
