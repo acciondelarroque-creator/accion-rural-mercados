@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://www.grupoguarino.com.ar/precios-mag/"
 STATE_FILE = "mag_previous.json"
 OUTPUT_FILE = "mag.json"
-SOURCE_ID = "guarino-max-corriente2-categorias-v3"
+SOURCE_ID = "guarino-max-corriente2-grupos-v4"
 
 CATEGORIAS = {
     "novillos_431_460": "Novillos 431/460",
@@ -74,81 +74,72 @@ def obtener_indices(texto):
 
     inmag, inmag_change = indice("INMAG")
     igmag, igmag_change = indice("IGMAG")
-
-    arr_match = re.search(
-        r"([\d.]+,\d{2,3})\s*Índice\s+Arrendamiento",
-        texto,
-        re.IGNORECASE,
-    )
+    arr_match = re.search(r"([\d.]+,\d{2,3})\s*Índice\s+Arrendamiento", texto, re.IGNORECASE)
     arrendamiento = numero_argentino(arr_match.group(1)) if arr_match else None
-
-    arr_change_match = re.search(
-        r"Índice\s+Arrendamiento\s*([+-]\d+(?:,\d+)?)%\s*Var\.\s*Arrendamiento",
-        texto,
-        re.IGNORECASE,
-    )
+    arr_change_match = re.search(r"Índice\s+Arrendamiento\s*([+-]\d+(?:,\d+)?)%\s*Var\.\s*Arrendamiento", texto, re.IGNORECASE)
     arr_change = float(arr_change_match.group(1).replace(",", ".")) if arr_change_match else None
-
-    indices = {
+    return {
         "inmag_novillo": inmag,
         "igmag_general": igmag,
         "arrendamiento": arrendamiento,
-    }
-    changes = {
+    }, {
         "inmag_novillo": inmag_change,
         "igmag_general": igmag_change,
         "arrendamiento": arr_change,
     }
-    return indices, changes
 
 
 def extraer_corriente_maximo(texto, nombre):
-    """Extrae el segundo precio de la fila: Mín. Corriente, Máx. Corriente, Máximos, Kilos.
-
-    Guarino actualmente puede entregar estas filas como contenido HTML no tabular.
-    Por eso no dependemos de encontrar una etiqueta <table>.
-    """
     precio = r"(?:\$\s*)?([0-9][0-9.]*(?:,[0-9]+)?|—)"
     patron = re.escape(nombre) + rf"\s+{precio}\s+{precio}\s+{precio}"
     match = re.search(patron, texto, re.IGNORECASE)
-    if not match:
-        return None
-    return numero_argentino(match.group(2))
+    return numero_argentino(match.group(2)) if match else None
+
+
+def obtener_fecha(texto):
+    meses = {
+        "enero": "01", "febrero": "02", "marzo": "03", "abril": "04", "mayo": "05", "junio": "06",
+        "julio": "07", "agosto": "08", "septiembre": "09", "setiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
+    }
+    patrones = [
+        r"(\d{1,2})\s+de\s+([a-záéíóú]+)\s+de\s+(\d{4})",
+        r"(\d{1,2})\s*/\s*(\d{1,2})\s*/\s*(\d{4})",
+        r"(\d{1,2})\s*-\s*(\d{1,2})\s*-\s*(\d{4})",
+    ]
+    for patron in patrones:
+        match = re.search(patron, texto, re.IGNORECASE)
+        if not match:
+            continue
+        grupos = match.groups()
+        if len(grupos) == 3 and grupos[1].lower() in meses:
+            return f"{grupos[0].zfill(2)}/{meses[grupos[1].lower()]}/{grupos[2]}"
+        return f"{grupos[0].zfill(2)}/{grupos[1].zfill(2)}/{grupos[2]}"
+    return None
+
+
+def promedio_grupo(valores, claves):
+    disponibles = [valores.get(clave) for clave in claves if valores.get(clave) is not None]
+    return round(sum(disponibles) / len(disponibles), 2) if disponibles else None
 
 
 def obtener_ultima_rueda():
     html = obtener_pagina()
     soup = BeautifulSoup(html, "html.parser")
     texto = soup.get_text(" ", strip=True)
-
-    fecha_match = re.search(r"(\d{1,2}) de ([a-záéíóú]+) de (\d{4})", texto, re.IGNORECASE)
-    meses = {
-        "enero": "01", "febrero": "02", "marzo": "03", "abril": "04", "mayo": "05", "junio": "06",
-        "julio": "07", "agosto": "08", "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
-    }
-    fecha_publicada = None
-    if fecha_match:
-        dia, mes, anio = fecha_match.groups()
-        numero_mes = meses.get(mes.lower())
-        if numero_mes:
-            fecha_publicada = f"{dia.zfill(2)}/{numero_mes}/{anio}"
-
+    fecha_publicada = obtener_fecha(texto)
     entrada_match = re.search(r"Entrada del día\s+([\d.]+)\s+Cabezas", texto, re.IGNORECASE)
     cabezas = int(entrada_match.group(1).replace(".", "")) if entrada_match else None
-
     valores = {clave: extraer_corriente_maximo(texto, nombre) for clave, nombre in CATEGORIAS.items()}
-
     if not fecha_publicada:
-        raise RuntimeError("No se pudo determinar la fecha de la rueda MAG")
+        raise RuntimeError("No se pudo determinar la fecha de la rueda MAG en Guarino")
     if all(valor is None for valor in valores.values()):
         raise RuntimeError("No se encontraron las categorías de precios MAG en Guarino")
-
     indices, indices_changes = obtener_indices(texto)
     faltantes = [clave for clave, valor in indices.items() if valor is None]
     if faltantes:
         raise RuntimeError(f"No se encontraron los índices MAG: {', '.join(faltantes)}")
-
-    return fecha_publicada, valores, cabezas, indices, indices_changes
+    grupos = {nombre: promedio_grupo(valores, claves) for nombre, claves in GRUPOS.items()}
+    return fecha_publicada, valores, grupos, cabezas, indices, indices_changes
 
 
 def cargar_anterior():
@@ -173,16 +164,11 @@ def calcular_variaciones(actual, anterior):
 
 
 def main():
-    fecha_publicada, valores, cabezas, indices, indices_changes = obtener_ultima_rueda()
+    fecha_publicada, valores, grupos, cabezas, indices, indices_changes = obtener_ultima_rueda()
     anterior = cargar_anterior()
-
     if fecha_publicada == anterior.get("date") and anterior.get("source_id") == SOURCE_ID:
         print(f"MAG: sin rueda nueva ({fecha_publicada}). Se conservan mag.json y mag_previous.json.")
         return
-
-    misma_fuente = anterior.get("source_id") == SOURCE_ID
-    cambios = calcular_variaciones(valores, anterior.get("values", {})) if misma_fuente else {clave: None for clave in valores}
-
     datos = {
         "updated": datetime.now(timezone.utc).isoformat(),
         "source": "Guarino Producciones · Mercado Agroganadero de Cañuelas (MAG)",
@@ -193,23 +179,16 @@ def main():
         "source_field": "Máx. Corriente (Corriente 2)",
         "categories": CATEGORIAS,
         "groups": GRUPOS,
+        "group_values": grupos,
         "values": valores,
-        "changes": cambios,
+        "changes": {clave: None for clave in grupos},
         "indices": indices,
         "indices_changes": indices_changes,
     }
-
     with open(OUTPUT_FILE, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=2)
     with open(STATE_FILE, "w", encoding="utf-8") as archivo:
-        json.dump({
-            "source_id": SOURCE_ID,
-            "values": valores,
-            "heads": cabezas,
-            "date": fecha_publicada,
-            "indices": indices,
-        }, archivo, ensure_ascii=False, indent=2)
-
+        json.dump({"source_id": SOURCE_ID, "values": valores, "group_values": grupos, "heads": cabezas, "date": fecha_publicada, "indices": indices}, archivo, ensure_ascii=False, indent=2)
     print(json.dumps(datos, ensure_ascii=False, indent=2))
 
 
