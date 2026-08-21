@@ -1,11 +1,11 @@
 {
   "values": {
-    "novillos": 4211.634,
-    "novillitos": 4704.323,
-    "vaquillonas": 4408.969,
-    "vacas": 3010.210,
-    "toros": 3029.602
+    "novillos": 4700.0,
+    "novillitos": 5300.0,
+    "vaquillonas": 5300.0,
+    "vacas": 3700.0,
+    "toros": 3300.0
   },
-  "heads": 5447,
-  "date": "19/08/2026"
+  "heads": 5889,
+  "date": "21/08/2026"
 }

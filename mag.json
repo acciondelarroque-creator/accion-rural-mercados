@@ -1,21 +1,21 @@
 {
-  "updated": "2026-08-20T01:04:00+00:00",
-  "source": "Mercado Agroganadero de Cañuelas",
-  "url": "https://www.mercadoagroganadero.com.ar/dll/hacienda1.dll/haciinfo000002",
-  "date": "19/08/2026",
-  "heads": 5447,
+  "updated": "2026-08-21T16:58:35.849815+00:00",
+  "source": "Guarino Producciones · Mercado Agroganadero de Cañuelas (MAG)",
+  "url": "https://www.grupoguarino.com.ar/precios-mag/",
+  "date": "21/08/2026",
+  "heads": 5889,
   "values": {
-    "novillos": 4211.634,
-    "novillitos": 4704.323,
-    "vaquillonas": 4408.969,
-    "vacas": 3010.210,
-    "toros": 3029.602
+    "novillos": 4700.0,
+    "novillitos": 5300.0,
+    "vaquillonas": 5300.0,
+    "vacas": 3700.0,
+    "toros": 3300.0
   },
   "changes": {
-    "novillos": -3.93,
-    "novillitos": 1.81,
-    "vaquillonas": -0.85,
-    "vacas": -3.81,
-    "toros": -5.54
+    "novillos": 11.6,
+    "novillitos": 12.66,
+    "vaquillonas": 20.21,
+    "vacas": 22.92,
+    "toros": 8.93
   }
 }
