@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://www.grupoguarino.com.ar/precios-mag/"
 STATE_FILE = "mag_previous.json"
 OUTPUT_FILE = "mag.json"
-SOURCE_ID = "guarino-max-corriente2-categorias-v2"
+SOURCE_ID = "guarino-max-corriente2-categorias-v3"
 
 CATEGORIAS = {
     "novillos_431_460": "Novillos 431/460",
@@ -65,9 +65,10 @@ def obtener_pagina():
 
 
 def obtener_indices(texto):
-    # Guarino actualmente publica los índices en la cabecera como:
-    # INMAG 4.312,210+0,0%Índice de Novillo
-    # IGMAG 3.680,250-1,4%Índice General
+    # Guarino publica actualmente los índices en la cabecera como:
+    # INMAG 4.203,600 -2,5% Índice de Novillo
+    # IGMAG 3.979,790 +6,7% Índice General
+    # 4362,92 Índice Arrendamiento -3,4% Var. Arrendamiento
     def indice(etiqueta):
         patron = rf"{etiqueta}\s*([\d.]+,\d{{3}})\s*([+-]\d+(?:,\d+)?)%"
         match = re.search(patron, texto, re.IGNORECASE)
@@ -78,18 +79,25 @@ def obtener_indices(texto):
     inmag, inmag_change = indice("INMAG")
     igmag, igmag_change = indice("IGMAG")
 
-    arr = re.search(
-        r"([\d.]+,\d{2,3})\s+Índice Arrendamiento\s+([+-]\d+(?:,\d+)?)%Var\. Arrendamiento",
+    # El índice de arrendamiento no siempre conserva espacios entre el número,
+    # la etiqueta y la variación al extraer el texto HTML. Por eso se buscan
+    # los elementos de manera independiente y tolerante.
+    arr_match = re.search(
+        r"([\d.]+,\d{2,3})\s*Índice\s+Arrendamiento",
         texto,
         re.IGNORECASE,
     )
-    if arr:
-        arrendamiento = numero_argentino(arr.group(1))
-        arr_change = float(arr.group(2).replace(",", "."))
-    else:
-        arrendamiento = None
-        arr_change = None
+    arrendamiento = numero_argentino(arr_match.group(1)) if arr_match else None
 
+    arr_change_match = re.search(
+        r"Índice\s+Arrendamiento\s*([+-]\d+(?:,\d+)?)%\s*Var\.\s*Arrendamiento",
+        texto,
+        re.IGNORECASE,
+    )
+    arr_change = float(arr_change_match.group(1).replace(",", ".")) if arr_change_match else None
+
+    # Si la cabecera no trae la variación, el valor sigue siendo válido;
+    # la variación puede quedar sin mostrar.
     indices = {
         "inmag_novillo": inmag,
         "igmag_general": igmag,
@@ -150,8 +158,8 @@ def obtener_ultima_rueda():
         raise RuntimeError("La tabla MAG de Guarino no contiene valores de Máx. Corriente")
 
     indices, indices_changes = obtener_indices(texto)
-    if any(valor is None for valor in indices.values()):
-        faltantes = [clave for clave, valor in indices.items() if valor is None]
+    faltantes = [clave for clave, valor in indices.items() if valor is None]
+    if faltantes:
         raise RuntimeError(f"No se encontraron los índices MAG: {', '.join(faltantes)}")
 
     return fecha_publicada, valores, cabezas, indices, indices_changes
