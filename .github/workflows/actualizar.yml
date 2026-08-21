@@ -13,35 +13,46 @@ permissions:
   contents: write
 
 jobs:
-  actualizar:
-    # Evita que el propio commit de actualización dispare otra ejecución.
+  granos:
     if: github.event_name != 'push' || !contains(github.event.head_commit.message, 'Actualizar mercados locales')
     runs-on: ubuntu-latest
-
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-
       - name: Preparar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-
       - name: Instalar dependencias
-        run: |
-          pip install requests beautifulsoup4
-
+        run: pip install requests beautifulsoup4
       - name: Obtener precios de granos
         run: python update.py
-
-      - name: Obtener precios MAG Cañuelas
-        continue-on-error: true
-        run: python update_mag.py
-
-      - name: Guardar precios actualizados
+      - name: Guardar granos
         run: |
           git config user.name "Acción Rural Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data.json previous.json mag.json mag_previous.json
-          git diff --cached --quiet || git commit -m "Actualizar mercados locales"
+          git add data.json previous.json
+          git diff --cached --quiet || git commit -m "Actualizar mercados locales - granos"
+          git push
+
+  mag:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, 'Actualizar mercados locales')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Instalar dependencias
+        run: pip install requests beautifulsoup4
+      - name: Obtener precios MAG Cañuelas
+        run: python update_mag.py
+      - name: Guardar MAG
+        run: |
+          git config user.name "Acción Rural Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add mag.json mag_previous.json
+          git diff --cached --quiet || git commit -m "Actualizar mercados locales - MAG"
           git push
