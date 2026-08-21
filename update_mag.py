@@ -1,189 +1,106 @@
 import json
 import os
 import re
-from datetime import date, datetime, timedelta, timezone
-from urllib.parse import urlencode
+from datetime import datetime, timezone
 
 import requests
 from bs4 import BeautifulSoup
 
-BASE_URL = "https://www.mercadoagroganadero.com.ar/dll/hacienda1.dll/haciinfo000002"
+BASE_URL = "https://www.grupoguarino.com.ar/precios-mag/"
 STATE_FILE = "mag_previous.json"
 OUTPUT_FILE = "mag.json"
-CATEGORIAS = [
-    ("novillos", "NOVILLOS"),
-    ("novillitos", "NOVILLITOS"),
-    ("vaquillonas", "VAQUILLONAS"),
-    ("vacas", "VACAS"),
-    ("toros", "TOROS"),
-]
+CATEGORIAS = {
+    "novillos": "NOVILLOS",
+    "novillitos": "NOVILLITOS",
+    "vaquillonas": "VAQUILLONAS",
+    "vacas": "VACAS",
+    "toros": "TOROS",
+}
 
 
-def url_para_fecha(fecha):
-    fecha_txt = fecha.strftime("%d/%m/%Y")
-    params = {"LISTADO": "SI", "txtFECHAFIN": fecha_txt, "txtFECHAINI": fecha_txt}
-    return BASE_URL + "?" + urlencode(params)
-
-
-def limpiar_lineas(html):
-    soup = BeautifulSoup(html, "html.parser")
-    texto = soup.get_text("\n", strip=True)
-    lineas = []
-    for linea in texto.splitlines():
-        linea = re.sub(r"\s+", " ", linea).strip()
-        if linea:
-            lineas.append(linea)
-    return lineas
+def limpiar_token(token):
+    return re.sub(r"\s+", " ", token.strip())
 
 
 def numero_argentino(token):
-    token = token.strip().lstrip("$")
-    if not re.fullmatch(r"\d[\d.]*,\d{3}", token):
+    token = limpiar_token(token).replace("$", "")
+    token = token.replace(".", "").replace(",", ".")
+    try:
+        return float(token)
+    except (TypeError, ValueError):
         return None
-    return float(token.replace(".", "").replace(",", "."))
 
 
-def numero_entero(token):
-    token = token.strip().lstrip("$").replace(".", "")
-    if not re.fullmatch(r"\d+", token):
-        return None
-    return int(token)
+def obtener_pagina():
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; AccionRuralBot/1.0)"}
+    respuesta = requests.get(BASE_URL, headers=headers, timeout=30)
+    respuesta.raise_for_status()
+    return respuesta.text
 
 
-def encontrar_promedios(lineas):
-    """Extrae el promedio consolidado de cada categoría.
-
-    El MAG cambió recientemente la forma en que devuelve el HTML de la
-    consulta histórica. Primero intentamos el formato anterior y luego un
-    formato alternativo en el que la fila subtotal comienza directamente con
-    el promedio, sin la línea de separadores que usaba el parser original.
-    """
-    nombres = [nombre for _, nombre in CATEGORIAS]
-    resultados = {}
-
-    for indice, (clave, nombre) in enumerate(CATEGORIAS):
-        inicio = next((i for i, linea in enumerate(lineas) if linea.upper().startswith(nombre)), None)
-        if inicio is None:
-            continue
-
-        siguientes = []
-        for siguiente in nombres[indice + 1:]:
-            pos = next((i for i in range(inicio + 1, len(lineas)) if lineas[i].upper().startswith(siguiente)), None)
-            if pos is not None:
-                siguientes.append(pos)
-        fin = min(siguientes) if siguientes else len(lineas)
-        bloque = lineas[inicio:fin]
-
-        # Formato anterior: después de una línea de guiones aparece la fila
-        # subtotal y el primer número es el promedio consolidado.
-        for i, linea in enumerate(bloque[:-1]):
-            if linea.replace(" ", "") and set(linea.replace(" ", "")) <= {"-"}:
-                tokens = bloque[i + 1].split()
-                if tokens:
-                    valor = numero_argentino(tokens[0])
-                    if valor is not None:
-                        resultados[clave] = valor
-                        break
-
-        if clave in resultados:
-            continue
-
-        # Formato nuevo: la fila subtotal comienza con el promedio. Buscamos
-        # desde el final del bloque para evitar confundirla con las filas de
-        # detalle, que comienzan con el nombre de la subcategoría.
-        for linea in reversed(bloque):
-            tokens = linea.replace("|", " ").split()
-            if not tokens:
-                continue
-            valor = numero_argentino(tokens[0])
-            if valor is not None:
-                resultados[clave] = valor
-                break
-
-    return resultados
-
-
-def encontrar_cabezas_totales(lineas):
-    """Encuentra las cabezas totales, tolerando las dos estructuras HTML."""
-    for i, linea in enumerate(lineas):
-        if not linea.upper().startswith("TOTALES"):
-            continue
-
-        candidatos = [linea]
-        if i + 1 < len(lineas):
-            candidatos.append(lineas[i + 1])
-
-        for candidato in candidatos:
-            tokens = candidato.replace("|", " ").split()
-            for posicion, token in enumerate(tokens):
-                valor = numero_entero(token)
-                if valor is None or posicion + 1 >= len(tokens):
-                    continue
-                siguiente = tokens[posicion + 1]
-                if siguiente.startswith("$"):
-                    return valor
-
-    # En algunas respuestas del MAG la fila TOTALES dejó de aparecer en el
-    # texto extraído. En ese caso, sumamos las cabezas de las cinco filas
-    # consolidadas. En esas filas el segundo campo es la cantidad de cabezas.
-    nombres = [nombre for _, nombre in CATEGORIAS]
-    total = 0
-    encontradas = 0
-
-    for indice, (clave, nombre) in enumerate(CATEGORIAS):
-        inicio = next((i for i, linea in enumerate(lineas) if linea.upper().startswith(nombre)), None)
-        if inicio is None:
-            continue
-        siguientes = []
-        for siguiente in nombres[indice + 1:]:
-            pos = next((i for i in range(inicio + 1, len(lineas)) if lineas[i].upper().startswith(siguiente)), None)
-            if pos is not None:
-                siguientes.append(pos)
-        fin = min(siguientes) if siguientes else len(lineas)
-
-        for linea in reversed(lineas[inicio:fin]):
-            tokens = linea.replace("|", " ").split()
-            if len(tokens) < 2:
-                continue
-            promedio = numero_argentino(tokens[0])
-            cabezas = numero_entero(tokens[1])
-            if promedio is not None and cabezas is not None:
-                total += cabezas
-                encontradas += 1
-                break
-
-    return total if encontradas == len(CATEGORIAS) else None
-
-
-def extraer_fecha_publicada(lineas):
-    for linea in lineas:
-        match = re.search(r"DESDE .*? AL .*? (\d{2}/\d{2}/\d{4})", linea, re.IGNORECASE)
-        if match:
-            return match.group(1)
-    for linea in lineas:
-        fechas = re.findall(r"\d{2}/\d{2}/\d{4}", linea)
-        if fechas and "PRECIOS" in linea.upper():
-            return fechas[-1]
+def encontrar_tabla(soup):
+    for tabla in soup.find_all("table"):
+        texto = tabla.get_text(" ", strip=True).upper()
+        if "MÍN." in texto and "CORRIENTE" in texto and "MÁXIMOS" in texto:
+            return tabla
     return None
 
 
 def obtener_ultima_rueda():
-    hoy = date.today()
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; AccionRuralBot/1.0)"}
+    html = obtener_pagina()
+    soup = BeautifulSoup(html, "html.parser")
+    texto = soup.get_text(" ", strip=True)
 
-    for retroceso in range(0, 10):
-        fecha = hoy - timedelta(days=retroceso)
-        respuesta = requests.get(url_para_fecha(fecha), headers=headers, timeout=30)
-        respuesta.raise_for_status()
-        lineas = limpiar_lineas(respuesta.text)
-        valores = encontrar_promedios(lineas)
-        cabezas = encontrar_cabezas_totales(lineas)
+    fecha_match = re.search(r"(\d{1,2}) de ([a-záéíóú]+) de (\d{4})", texto, re.IGNORECASE)
+    meses = {
+        "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
+        "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
+        "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
+    }
+    fecha_publicada = None
+    if fecha_match:
+        dia, mes, anio = fecha_match.groups()
+        numero_mes = meses.get(mes.lower())
+        if numero_mes:
+            fecha_publicada = f"{dia.zfill(2)}/{numero_mes}/{anio}"
 
-        if len(valores) == len(CATEGORIAS) and cabezas is not None:
-            fecha_publicada = extraer_fecha_publicada(lineas) or fecha.strftime("%d/%m/%Y")
-            return fecha, fecha_publicada, valores, cabezas, url_para_fecha(fecha)
+    entrada_match = re.search(r"Entrada del día\s+([\d.]+)\s+Cabezas", texto, re.IGNORECASE)
+    cabezas = int(entrada_match.group(1).replace(".", "")) if entrada_match else None
 
-    raise RuntimeError("No se encontró una rueda MAG con los cinco promedios y las cabezas totales en los últimos 10 días")
+    tabla = encontrar_tabla(soup)
+    if tabla is None:
+        raise RuntimeError("No se encontró la tabla de precios MAG en Guarino")
+
+    valores = {clave: None for clave in CATEGORIAS}
+    categoria_actual = None
+
+    for fila in tabla.find_all("tr"):
+        celdas = [limpiar_token(c.get_text(" ", strip=True)) for c in fila.find_all(["th", "td"])]
+        if not celdas:
+            continue
+
+        primera = celdas[0].upper()
+        for clave, nombre in CATEGORIAS.items():
+            if primera == nombre:
+                categoria_actual = clave
+                break
+
+        if categoria_actual is None or len(celdas) < 4:
+            continue
+
+        # Guarino: Categoría | Mín. Corriente | Máx. Corriente | Máximos | Kilos
+        # Usamos Máx. Corriente, es decir, "Corriente 2".
+        valor = numero_argentino(celdas[2])
+        if valor is not None:
+            if valores[categoria_actual] is None or valor > valores[categoria_actual]:
+                valores[categoria_actual] = valor
+
+    if not fecha_publicada:
+        raise RuntimeError("No se pudo determinar la fecha de la rueda MAG")
+    if all(valor is None for valor in valores.values()):
+        raise RuntimeError("La tabla MAG de Guarino no contiene valores de Máx. Corriente")
+
+    return fecha_publicada, valores, cabezas
 
 
 def cargar_anterior():
@@ -208,20 +125,18 @@ def calcular_variaciones(actual, anterior):
 
 
 def main():
-    fecha, fecha_publicada, valores, cabezas, url = obtener_ultima_rueda()
+    fecha_publicada, valores, cabezas = obtener_ultima_rueda()
     anterior = cargar_anterior()
-    fecha_anterior = anterior.get("date")
 
-    if fecha_publicada and fecha_anterior and fecha_publicada == fecha_anterior:
+    if fecha_publicada == anterior.get("date"):
         print(f"MAG: sin rueda nueva ({fecha_publicada}). Se conservan mag.json y mag_previous.json.")
         return
 
     cambios = calcular_variaciones(valores, anterior.get("values", {}))
-
     datos = {
         "updated": datetime.now(timezone.utc).isoformat(),
-        "source": "Mercado Agroganadero de Cañuelas",
-        "url": url,
+        "source": "Guarino Producciones · Mercado Agroganadero de Cañuelas (MAG)",
+        "url": BASE_URL,
         "date": fecha_publicada,
         "heads": cabezas,
         "values": valores,
@@ -230,7 +145,6 @@ def main():
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=2)
-
     with open(STATE_FILE, "w", encoding="utf-8") as archivo:
         json.dump({"values": valores, "heads": cabezas, "date": fecha_publicada}, archivo, ensure_ascii=False, indent=2)
 
