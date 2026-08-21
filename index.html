@@ -44,7 +44,7 @@ const order=[
 ];
 for(const [label,key] of order){html+=magCard(label,d.values?.[key],d.changes?.[key])}
 const track=document.getElementById('mag-track');track.innerHTML=html+html;startTicker(track,'mag')}
-function startTicker(track,type){if(type==='bcr'&&bcrTimer)clearInterval(bcrTimer);if(type==='mag'&&magTimer)clearInterval(magTimer);track.style.left='0px';setTimeout(function(){const half=track.scrollWidth/2;if(!half)return;const speed=type==='bcr'?0.7:0.55;let x=0;const tick=function(){x-=speed;if(x<=-half)x+=half;track.style.left=Math.round(x*10)/10+'px'};const timer=setInterval(tick,16);if(type==='bcr')bcrTimer=timer;else magTimer=timer},50)}
+function startTicker(track,type){if(type==='bcr'&&bcrTimer)clearInterval(bcrTimer);if(type==='mag'&&magTimer)clearInterval(magTimer);track.style.left='0px';setTimeout(function(){const half=track.scrollWidth/2;if(!half)return;const speed=type==='bcr'?0.7:0.7;let x=0;const tick=function(){x-=speed;if(x<=-half)x+=half;track.style.left=Math.round(x*10)/10+'px'};const timer=setInterval(tick,16);if(type==='bcr')bcrTimer=timer;else magTimer=timer},50)}
 async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json())}catch(e){console.error('BCR:',e)}}
 async function loadMAG(){try{const r=await fetch(MAG_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderMAG(await r.json())}catch(e){console.error('MAG:',e)}}
 loadBCR();loadMAG();setInterval(loadBCR,1800000);setInterval(loadMAG,1800000);
