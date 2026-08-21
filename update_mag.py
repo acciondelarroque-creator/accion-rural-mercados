@@ -65,10 +65,6 @@ def obtener_pagina():
 
 
 def obtener_indices(texto):
-    # Guarino publica actualmente los índices en la cabecera como:
-    # INMAG 4.203,600 -2,5% Índice de Novillo
-    # IGMAG 3.979,790 +6,7% Índice General
-    # 4362,92 Índice Arrendamiento -3,4% Var. Arrendamiento
     def indice(etiqueta):
         patron = rf"{etiqueta}\s*([\d.]+,\d{{3}})\s*([+-]\d+(?:,\d+)?)%"
         match = re.search(patron, texto, re.IGNORECASE)
@@ -79,9 +75,6 @@ def obtener_indices(texto):
     inmag, inmag_change = indice("INMAG")
     igmag, igmag_change = indice("IGMAG")
 
-    # El índice de arrendamiento no siempre conserva espacios entre el número,
-    # la etiqueta y la variación al extraer el texto HTML. Por eso se buscan
-    # los elementos de manera independiente y tolerante.
     arr_match = re.search(
         r"([\d.]+,\d{2,3})\s*Índice\s+Arrendamiento",
         texto,
@@ -96,8 +89,6 @@ def obtener_indices(texto):
     )
     arr_change = float(arr_change_match.group(1).replace(",", ".")) if arr_change_match else None
 
-    # Si la cabecera no trae la variación, el valor sigue siendo válido;
-    # la variación puede quedar sin mostrar.
     indices = {
         "inmag_novillo": inmag,
         "igmag_general": igmag,
@@ -109,6 +100,20 @@ def obtener_indices(texto):
         "arrendamiento": arr_change,
     }
     return indices, changes
+
+
+def extraer_corriente_maximo(texto, nombre):
+    """Extrae el segundo precio de la fila: Mín. Corriente, Máx. Corriente, Máximos, Kilos.
+
+    Guarino actualmente puede entregar estas filas como contenido HTML no tabular.
+    Por eso no dependemos de encontrar una etiqueta <table>.
+    """
+    precio = r"(?:\$\s*)?([0-9][0-9.]*(?:,[0-9]+)?|—)"
+    patron = re.escape(nombre) + rf"\s+{precio}\s+{precio}\s+{precio}"
+    match = re.search(patron, texto, re.IGNORECASE)
+    if not match:
+        return None
+    return numero_argentino(match.group(2))
 
 
 def obtener_ultima_rueda():
@@ -131,31 +136,12 @@ def obtener_ultima_rueda():
     entrada_match = re.search(r"Entrada del día\s+([\d.]+)\s+Cabezas", texto, re.IGNORECASE)
     cabezas = int(entrada_match.group(1).replace(".", "")) if entrada_match else None
 
-    tabla = None
-    for candidata in soup.find_all("table"):
-        encabezado = candidata.get_text(" ", strip=True).upper()
-        if "MÍN. CORRIENTE" in encabezado and "MÁX. CORRIENTE" in encabezado:
-            tabla = candidata
-            break
-    if tabla is None:
-        raise RuntimeError("No se encontró la tabla de precios MAG en Guarino")
-
-    nombres = {limpiar_token(nombre).upper(): clave for clave, nombre in CATEGORIAS.items()}
-    valores = {clave: None for clave in CATEGORIAS}
-
-    for fila in tabla.find_all("tr"):
-        celdas = [limpiar_token(c.get_text(" ", strip=True)) for c in fila.find_all(["th", "td"])]
-        if len(celdas) < 3:
-            continue
-        clave = nombres.get(celdas[0].upper())
-        if clave is not None:
-            # Categoría | Mín. Corriente | Máx. Corriente | Máximos | Kilos
-            valores[clave] = numero_argentino(celdas[2])
+    valores = {clave: extraer_corriente_maximo(texto, nombre) for clave, nombre in CATEGORIAS.items()}
 
     if not fecha_publicada:
         raise RuntimeError("No se pudo determinar la fecha de la rueda MAG")
     if all(valor is None for valor in valores.values()):
-        raise RuntimeError("La tabla MAG de Guarino no contiene valores de Máx. Corriente")
+        raise RuntimeError("No se encontraron las categorías de precios MAG en Guarino")
 
     indices, indices_changes = obtener_indices(texto)
     faltantes = [clave for clave, valor in indices.items() if valor is None]
