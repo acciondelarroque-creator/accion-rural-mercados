@@ -9,13 +9,26 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://www.grupoguarino.com.ar/precios-mag/"
 STATE_FILE = "mag_previous.json"
 OUTPUT_FILE = "mag.json"
-SOURCE_ID = "guarino-max-corriente2"
+SOURCE_ID = "guarino-max-corriente2-categorias"
+
 CATEGORIAS = {
-    "novillos": "NOVILLOS",
-    "novillitos": "NOVILLITOS",
-    "vaquillonas": "VAQUILLONAS",
-    "vacas": "VACAS",
-    "toros": "TOROS",
+    "novillos_431_460": "Novillos 431/460",
+    "novillos_461_490": "Novillos 461/490",
+    "novillos_491_520": "Novillos 491/520",
+    "novillos_mas_520": "Novillos +520",
+    "novillos_regulares": "Novillos regulares",
+    "novillitos_300_350": "Novillitos 300/350",
+    "novillitos_351_390": "Novillitos 351/390",
+    "novillitos_391_430": "Novillitos 391/430",
+    "novillitos_regulares": "Novillitos regulares",
+    "vaquillonas_300_350": "Vaquillonas 300/350",
+    "vaquillonas_351_390": "Vaquillonas 351/390",
+    "vaquillonas_391_430": "Vaquillonas 391/430",
+    "vaquillonas_regulares": "Vaquillonas regulares",
+    "vacas_buenas_especiales": "Vacas (buenas a especiales)",
+    "vacas_regulares": "Vacas regulares",
+    "toros_buenos_especiales": "Toros (buenos a especiales)",
+    "toros_regulares": "Toros regulares",
 }
 
 
@@ -101,24 +114,19 @@ def obtener_ultima_rueda():
         raise RuntimeError("No se encontró la tabla de precios MAG en Guarino")
 
     valores = {clave: None for clave in CATEGORIAS}
-    categoria_actual = None
+    nombres = {limpiar_token(v).upper(): k for k, v in CATEGORIAS.items()}
+
     for fila in tabla.find_all("tr"):
         celdas = [limpiar_token(c.get_text(" ", strip=True)) for c in fila.find_all(["th", "td"])]
-        if not celdas:
+        if len(celdas) < 3:
             continue
-        primera = celdas[0].upper()
-        for clave, nombre in CATEGORIAS.items():
-            if primera == nombre:
-                categoria_actual = clave
-                break
-        if categoria_actual is None or len(celdas) < 4:
+        nombre = limpiar_token(celdas[0]).upper()
+        clave = nombres.get(nombre)
+        if clave is None:
             continue
         # Guarino: Categoría | Mín. Corriente | Máx. Corriente | Máximos | Kilos.
         # Corriente 2 = Máx. Corriente.
-        valor = numero_argentino(celdas[2])
-        if valor is not None:
-            if valores[categoria_actual] is None or valor > valores[categoria_actual]:
-                valores[categoria_actual] = valor
+        valores[clave] = numero_argentino(celdas[2])
 
     if not fecha_publicada:
         raise RuntimeError("No se pudo determinar la fecha de la rueda MAG")
@@ -162,9 +170,6 @@ def main():
         print(f"MAG: sin rueda nueva ({fecha_publicada}). Se conservan mag.json y mag_previous.json.")
         return
 
-    # IMPORTANTE: el archivo anterior podía provenir del viejo parser del MAG.
-    # No comparamos jamás una fuente con la otra. La primera ejecución con
-    # Guarino establece una nueva línea de base y deja las variaciones en S/C.
     misma_fuente = anterior.get("source_id") == SOURCE_ID
     cambios = calcular_variaciones(valores, anterior.get("values", {})) if misma_fuente else {clave: None for clave in valores}
 
