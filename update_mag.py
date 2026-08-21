@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://www.grupoguarino.com.ar/precios-mag/"
 STATE_FILE = "mag_previous.json"
 OUTPUT_FILE = "mag.json"
-SOURCE_ID = "guarino-max-corriente2-categorias"
+SOURCE_ID = "guarino-max-corriente2-categorias-v2"
 
 CATEGORIAS = {
     "novillos_431_460": "Novillos 431/460",
@@ -31,13 +31,25 @@ CATEGORIAS = {
     "toros_regulares": "Toros regulares",
 }
 
+GRUPOS = {
+    "NOVILLOS": ["novillos_431_460", "novillos_461_490", "novillos_491_520", "novillos_mas_520", "novillos_regulares"],
+    "NOVILLITOS": ["novillitos_300_350", "novillitos_351_390", "novillitos_391_430", "novillitos_regulares"],
+    "VAQUILLONAS": ["vaquillonas_300_350", "vaquillonas_351_390", "vaquillonas_391_430", "vaquillonas_regulares"],
+    "VACAS": ["vacas_buenas_especiales", "vacas_regulares"],
+    "TOROS": ["toros_buenos_especiales", "toros_regulares"],
+}
+
 
 def limpiar_token(token):
     return re.sub(r"\s+", " ", token.strip())
 
 
 def numero_argentino(token):
+    if token is None:
+        return None
     token = limpiar_token(token).replace("$", "")
+    if token in {"", "—", "-"}:
+        return None
     token = token.replace(".", "").replace(",", ".")
     try:
         return float(token)
@@ -52,41 +64,43 @@ def obtener_pagina():
     return respuesta.text
 
 
-def encontrar_tabla(soup):
-    for tabla in soup.find_all("table"):
-        texto = tabla.get_text(" ", strip=True).upper()
-        if "MÍN." in texto and "CORRIENTE" in texto and "MÁXIMOS" in texto:
-            return tabla
-    return None
-
-
-def extraer_indice(texto, patron):
-    match = re.search(patron, texto, re.IGNORECASE)
-    if not match:
-        return None, None
-    valor = numero_argentino(match.group(1))
-    variacion = None
-    if len(match.groups()) >= 2 and match.group(2):
-        try:
-            variacion = float(match.group(2).replace("%", "").replace(",", "."))
-        except ValueError:
-            pass
-    return valor, variacion
-
-
 def obtener_indices(texto):
-    inmag, inmag_change = extraer_indice(texto, r"INMAG\s*-\s*NOVILLO\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%")
-    igmag, igmag_change = extraer_indice(texto, r"IGMAG\s*-\s*GENERAL\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%")
-    arr, arr_change = extraer_indice(texto, r"ÍNDICE\s+SUGERIDO\s+ARRENDAMIENTOS\s+RURALES\s*([\d.]+,\d{3})([+-]\d+(?:,\d+)?)%")
-    return {
+    # Guarino actualmente publica los índices en la cabecera como:
+    # INMAG 4.312,210+0,0%Índice de Novillo
+    # IGMAG 3.680,250-1,4%Índice General
+    def indice(etiqueta):
+        patron = rf"{etiqueta}\s*([\d.]+,\d{{3}})\s*([+-]\d+(?:,\d+)?)%"
+        match = re.search(patron, texto, re.IGNORECASE)
+        if not match:
+            return None, None
+        return numero_argentino(match.group(1)), float(match.group(2).replace(",", "."))
+
+    inmag, inmag_change = indice("INMAG")
+    igmag, igmag_change = indice("IGMAG")
+
+    arr = re.search(
+        r"([\d.]+,\d{2,3})\s+Índice Arrendamiento\s+([+-]\d+(?:,\d+)?)%Var\. Arrendamiento",
+        texto,
+        re.IGNORECASE,
+    )
+    if arr:
+        arrendamiento = numero_argentino(arr.group(1))
+        arr_change = float(arr.group(2).replace(",", "."))
+    else:
+        arrendamiento = None
+        arr_change = None
+
+    indices = {
         "inmag_novillo": inmag,
         "igmag_general": igmag,
-        "arrendamiento": arr,
-    }, {
+        "arrendamiento": arrendamiento,
+    }
+    changes = {
         "inmag_novillo": inmag_change,
         "igmag_general": igmag_change,
         "arrendamiento": arr_change,
     }
+    return indices, changes
 
 
 def obtener_ultima_rueda():
@@ -109,24 +123,26 @@ def obtener_ultima_rueda():
     entrada_match = re.search(r"Entrada del día\s+([\d.]+)\s+Cabezas", texto, re.IGNORECASE)
     cabezas = int(entrada_match.group(1).replace(".", "")) if entrada_match else None
 
-    tabla = encontrar_tabla(soup)
+    tabla = None
+    for candidata in soup.find_all("table"):
+        encabezado = candidata.get_text(" ", strip=True).upper()
+        if "MÍN. CORRIENTE" in encabezado and "MÁX. CORRIENTE" in encabezado:
+            tabla = candidata
+            break
     if tabla is None:
         raise RuntimeError("No se encontró la tabla de precios MAG en Guarino")
 
+    nombres = {limpiar_token(nombre).upper(): clave for clave, nombre in CATEGORIAS.items()}
     valores = {clave: None for clave in CATEGORIAS}
-    nombres = {limpiar_token(v).upper(): k for k, v in CATEGORIAS.items()}
 
     for fila in tabla.find_all("tr"):
         celdas = [limpiar_token(c.get_text(" ", strip=True)) for c in fila.find_all(["th", "td"])]
         if len(celdas) < 3:
             continue
-        nombre = limpiar_token(celdas[0]).upper()
-        clave = nombres.get(nombre)
-        if clave is None:
-            continue
-        # Guarino: Categoría | Mín. Corriente | Máx. Corriente | Máximos | Kilos.
-        # Corriente 2 = Máx. Corriente.
-        valores[clave] = numero_argentino(celdas[2])
+        clave = nombres.get(celdas[0].upper())
+        if clave is not None:
+            # Categoría | Mín. Corriente | Máx. Corriente | Máximos | Kilos
+            valores[clave] = numero_argentino(celdas[2])
 
     if not fecha_publicada:
         raise RuntimeError("No se pudo determinar la fecha de la rueda MAG")
@@ -179,6 +195,10 @@ def main():
         "url": BASE_URL,
         "date": fecha_publicada,
         "heads": cabezas,
+        "label": "Corrientes Máximos",
+        "source_field": "Máx. Corriente (Corriente 2)",
+        "categories": CATEGORIAS,
+        "groups": GRUPOS,
         "values": valores,
         "changes": cambios,
         "indices": indices,
