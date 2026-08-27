@@ -1,36 +1,36 @@
 {
-  "source_id": "guarino-max-corriente2-grupos-v4",
+  "source_id": "guarino-max-corriente2-grupos-v5",
   "values": {
-    "novillos_431_460": 4700.0,
+    "novillos_431_460": 4600.0,
     "novillos_461_490": 4600.0,
     "novillos_491_520": null,
     "novillos_mas_520": null,
     "novillos_regulares": 4200.0,
-    "novillitos_300_350": null,
-    "novillitos_351_390": 5100.0,
-    "novillitos_391_430": 4800.0,
+    "novillitos_300_350": 5300.0,
+    "novillitos_351_390": 4900.0,
+    "novillitos_391_430": 4700.0,
     "novillitos_regulares": 4500.0,
-    "vaquillonas_300_350": 5200.0,
+    "vaquillonas_300_350": 5100.0,
     "vaquillonas_351_390": 4700.0,
     "vaquillonas_391_430": null,
     "vaquillonas_regulares": 4400.0,
-    "vacas_buenas_especiales": 3700.0,
+    "vacas_buenas_especiales": 3600.0,
     "vacas_regulares": 3300.0,
-    "toros_buenos_especiales": 3500.0,
+    "toros_buenos_especiales": 3600.0,
     "toros_regulares": null
   },
   "group_values": {
-    "NOVILLOS": 4500.0,
-    "NOVILLITOS": 4800.0,
-    "VAQUILLONAS": 4766.67,
-    "VACAS": 3500.0,
-    "TOROS": 3500.0
+    "NOVILLOS": 4466.67,
+    "NOVILLITOS": 4850.0,
+    "VAQUILLONAS": 4733.33,
+    "VACAS": 3450.0,
+    "TOROS": 3600.0
   },
-  "heads": 6964,
-  "date": "25/08/2026",
+  "heads": 5105,
+  "date": "26/08/2026",
   "indices": {
-    "inmag_novillo": 4349.19,
-    "igmag_general": 3872.68,
-    "arrendamiento": 4425.1
+    "inmag_novillo": 4113.13,
+    "igmag_general": 3724.76,
+    "arrendamiento": 4244.67
   }
 }
