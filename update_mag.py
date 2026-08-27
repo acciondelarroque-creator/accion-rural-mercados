@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://www.grupoguarino.com.ar/precios-mag/"
 STATE_FILE = "mag_previous.json"
 OUTPUT_FILE = "mag.json"
-SOURCE_ID = "guarino-max-corriente2-grupos-v4"
+SOURCE_ID = "guarino-max-corriente2-grupos-v5"
 
 CATEGORIAS = {
     "novillos_431_460": "Novillos 431/460",
@@ -66,7 +66,7 @@ def obtener_pagina():
 
 def obtener_indices(texto):
     def indice(etiqueta):
-        patron = rf"{etiqueta}\s*([\d.]+,\d{{3}})\s*([+-]\d+(?:,\d+)?)%"
+        patron = rf"{etiqueta}\s*([\d.]+,\d{{3}})\s*([+-]?\d+(?:,\d+)?)%"
         match = re.search(patron, texto, re.IGNORECASE)
         if not match:
             return None, None
@@ -74,9 +74,15 @@ def obtener_indices(texto):
 
     inmag, inmag_change = indice("INMAG")
     igmag, igmag_change = indice("IGMAG")
+
     arr_match = re.search(r"([\d.]+,\d{2,3})\s*Índice\s+Arrendamiento", texto, re.IGNORECASE)
+    if not arr_match:
+        arr_match = re.search(r"Índice\s+Arrendamiento\s*[:：]?\s*([\d.]+,\d{2,3})", texto, re.IGNORECASE)
     arrendamiento = numero_argentino(arr_match.group(1)) if arr_match else None
-    arr_change_match = re.search(r"Índice\s+Arrendamiento\s*([+-]\d+(?:,\d+)?)%\s*Var\.\s*Arrendamiento", texto, re.IGNORECASE)
+
+    arr_change_match = re.search(r"Índice\s+Arrendamiento\s*([+-]?\d+(?:,\d+)?)%\s*Var\.\s*Arrendamiento", texto, re.IGNORECASE)
+    if not arr_change_match:
+        arr_change_match = re.search(r"Var\.\s*Arrendamiento\s*([+-]?\d+(?:,\d+)?)%", texto, re.IGNORECASE)
     arr_change = float(arr_change_match.group(1).replace(",", ".")) if arr_change_match else None
     return {
         "inmag_novillo": inmag,
@@ -135,9 +141,8 @@ def obtener_ultima_rueda():
     if all(valor is None for valor in valores.values()):
         raise RuntimeError("No se encontraron las categorías de precios MAG en Guarino")
     indices, indices_changes = obtener_indices(texto)
-    faltantes = [clave for clave, valor in indices.items() if valor is None]
-    if faltantes:
-        raise RuntimeError(f"No se encontraron los índices MAG: {', '.join(faltantes)}")
+    # Los índices son información complementaria: si Guarino cambia el formato,
+    # no debe impedir que se actualicen los precios de las categorías.
     grupos = {nombre: promedio_grupo(valores, claves) for nombre, claves in GRUPOS.items()}
     return fecha_publicada, valores, grupos, cabezas, indices, indices_changes
 
@@ -150,17 +155,6 @@ def cargar_anterior():
             return json.load(archivo)
     except (OSError, json.JSONDecodeError):
         return {}
-
-
-def calcular_variaciones(actual, anterior):
-    cambios = {}
-    for clave, valor in actual.items():
-        previo = anterior.get(clave)
-        if valor is None or previo is None or previo == 0:
-            cambios[clave] = None
-        else:
-            cambios[clave] = round((valor - previo) / previo * 100, 2)
-    return cambios
 
 
 def main():
