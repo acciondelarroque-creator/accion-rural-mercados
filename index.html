@@ -11,11 +11,12 @@
 <body>
 <div id="bcr" class="ticker" aria-label="Mercado de granos BCR"><div id="bcr-track" class="ticker-track"></div></div>
 <script>
-const BCR_URL='data.json',let_bcrTimer=null;
+const BCR_URL='data.json';
+let bcrTimer=null;
 function fmt(n){return n==null?'S/C':new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(n)}
 function bcrItem(label,value,delta){return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`}</span>`}
 function renderBCR(d){let html='';html+=bcrItem('Soja',d.values.soja,d.changes.soja);html+=bcrItem('Maíz',d.values.maiz,d.changes.maiz);html+=bcrItem('Trigo',d.values.trigo,d.changes.trigo);html+=bcrItem('Girasol',d.values.girasol,d.changes.girasol);html+=bcrItem('Sorgo',d.values.sorgo,d.changes.sorgo);html+=`<span class="ticker-item"><b>Pizarra: ${d.date||''}</b> <span class="muted">Fuente BCR</span></span>`;const track=document.getElementById('bcr-track');track.innerHTML=html+html;startTicker(track)}
-function startTicker(track){if(let_bcrTimer)clearInterval(let_bcrTimer);track.style.left='0px';setTimeout(function(){const half=track.scrollWidth/2;if(!half)return;let x=0;const tick=function(){x-=0.7;if(x<=-half)x+=half;track.style.left=Math.round(x*10)/10+'px'};let_bcrTimer=setInterval(tick,16)},50)}
+function startTicker(track){if(bcrTimer)clearInterval(bcrTimer);track.style.left='0px';setTimeout(function(){const half=track.scrollWidth/2;if(!half)return;let x=0;const tick=function(){x-=0.7;if(x<=-half)x+=half;track.style.left=Math.round(x*10)/10+'px'};bcrTimer=setInterval(tick,16)},50)}
 async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json())}catch(e){console.error('BCR:',e)}}
 loadBCR();setInterval(loadBCR,1800000);
 </script>
