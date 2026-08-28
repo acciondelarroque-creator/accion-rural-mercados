@@ -42,7 +42,12 @@ def obtener_precios(soup):
     if tabla is None:
         raise RuntimeError("No se encontró la tabla de cotizaciones de la BCR")
 
-    fecha = None
+    # La BCR puede cambiar el orden de las celdas del encabezado.
+    # No tomar simplemente la primera fecha encontrada: elegir la fecha
+    # más reciente de las que aparecen en la tabla.
+    fechas_en_tabla = re.findall(r"\d{2}/\d{2}/\d{4}", tabla.get_text(" ", strip=True))
+    fecha = max(fechas_en_tabla, key=lambda f: datetime.strptime(f, "%d/%m/%Y")) if fechas_en_tabla else None
+
     valores = {}
     nombres = {"soja": "soja", "sorgo": "sorgo", "girasol": "girasol", "trigo": "trigo", "maiz": "maiz"}
 
@@ -51,21 +56,20 @@ def obtener_precios(soup):
         textos = [c.get_text(" ", strip=True) for c in celdas]
         if not textos:
             continue
-        fila_normalizada = [normalizar(t) for t in textos]
-        if "fecha negociacion" in fila_normalizada[0]:
-            fechas = re.findall(r"\d{2}/\d{2}/\d{4}", " ".join(textos))
-            if fechas:
-                fecha = fechas[0]
-            continue
 
+        fila_normalizada = [normalizar(t) for t in textos]
         producto = fila_normalizada[0]
         clave = None
         for nombre_normalizado, clave_producto in nombres.items():
             if producto == nombre_normalizado or producto.startswith(nombre_normalizado + " "):
                 clave = clave_producto
                 break
+
         if clave is None or len(textos) < 3:
             continue
+
+        # La primera cotización está en la tercera celda (después del
+        # nombre en español y su traducción al inglés).
         valores[clave] = limpiar_numero(textos[2])
 
     requeridos = ["soja", "maiz", "trigo", "girasol", "sorgo"]
@@ -105,7 +109,6 @@ def main():
     fecha_anterior = anterior_estado.get("date")
 
     # Si la BCR todavía no publicó una rueda nueva, no tocar nada.
-    # Esto evita borrar los ▲/▼ o convertirlos en 0,00% fuera de rueda.
     if fecha and fecha_anterior and fecha == fecha_anterior:
         print(f"BCR: sin rueda nueva ({fecha}). Se conservan data.json y previous.json.")
         return
