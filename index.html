@@ -24,23 +24,25 @@ body{font-family:Georgia,"Times New Roman",serif}
 .ticker-item .up{color:#0b6b3a}
 .ticker-item .down{color:#b51f1f}
 .ticker-item .muted{color:#eee;font-size:11px}
-.ticker-arrow{position:absolute;z-index:6;top:0;width:38px;height:40px;display:flex;align-items:center;justify-content:center;pointer-events:none;background:linear-gradient(to right,rgba(181,138,58,.96),rgba(181,138,58,0));color:#fff;font-family:Arial,sans-serif;font-size:23px;line-height:1;opacity:1;transition:opacity .25s}
+.ticker-arrow{position:absolute;z-index:6;top:0;width:38px;height:40px;display:flex;align-items:center;justify-content:center;pointer-events:none;background:linear-gradient(to right,rgba(181,138,58,.96),rgba(181,138,58,0));color:#fff;opacity:1;transition:opacity .25s}
 .ticker-arrow.left{left:0;background:linear-gradient(to right,#B58A3A,rgba(181,138,58,.92),rgba(181,138,58,0))}
 .ticker-arrow.right{right:0;background:linear-gradient(to left,#B58A3A,rgba(181,138,58,.92),rgba(181,138,58,0))}
-.ticker-arrow span{display:block;line-height:1;font-size:23px;font-family:Arial,sans-serif;font-weight:400;transform:translateY(0)}
+.ticker-arrow span{display:block;width:10px;height:10px;border-top:2px solid #fff;border-right:2px solid #fff;line-height:0;font-size:0;flex:0 0 10px}
+.ticker-arrow.left span{transform:rotate(-135deg)}
+.ticker-arrow.right span{transform:rotate(45deg)}
 .ticker-arrow.left span{animation:slideHintLeft 1.5s ease-in-out infinite}
 .ticker-arrow.right span{animation:slideHint 1.5s ease-in-out infinite}
-@keyframes slideHint{0%,100%{transform:translateX(0);opacity:.55}50%{transform:translateX(6px);opacity:1}}
-@keyframes slideHintLeft{0%,100%{transform:translateX(0);opacity:.55}50%{transform:translateX(-6px);opacity:1}}
+@keyframes slideHint{0%,100%{margin-left:0;opacity:.55}50%{margin-left:6px;opacity:1}}
+@keyframes slideHintLeft{0%,100%{margin-left:0;opacity:.55}50%{margin-left:-6px;opacity:1}}
 .ticker-arrow.hidden{opacity:0}
 @media(min-width:601px){.ticker-header{width:150px}.ticker-window{left:150px}.ticker-arrow{width:38px}.ticker-header-title{font-size:15px}.ticker-header-date{font-size:11px}.ticker-header-source{font-size:10px;margin-top:3px}}
-@media(max-width:600px){.ticker-header{width:126px;height:40px;padding:0 8px}.ticker-window{left:126px;height:40px}.ticker-track{height:40px;padding-left:22px}.ticker-item{height:40px;padding:0 14px;font-size:12px;gap:6px}.ticker-arrow{height:40px;width:38px;font-size:23px}.ticker-arrow span{font-size:23px}.ticker-header-title{font-size:12px}.ticker-header-date{font-size:10px}.ticker-header-source{font-size:9px;margin-top:3px}}
+@media(max-width:600px){.ticker-header{width:126px;height:40px;padding:0 8px}.ticker-window{left:126px;height:40px}.ticker-track{height:40px;padding-left:22px}.ticker-item{height:40px;padding:0 14px;font-size:12px;gap:6px}.ticker-arrow{height:40px;width:38px}.ticker-header-title{font-size:12px}.ticker-header-date{font-size:10px}.ticker-header-source{font-size:9px;margin-top:3px}}
 </style>
 </head>
 <body>
 <div id="bcr" class="ticker" aria-label="Mercado de granos BCR">
 <div class="ticker-header"><div class="ticker-header-main"><div class="ticker-header-top"><div class="ticker-header-title">Pizarra:</div><div id="bcr-date" class="ticker-header-date">--/--/--</div></div><div class="ticker-header-source">Fuente: BCR</div></div></div>
-<div class="ticker-window" id="bcr-window"><div id="bcr-arrow-left" class="ticker-arrow left hidden"><span>←</span></div><div id="bcr-track" class="ticker-track"></div><div id="bcr-arrow-right" class="ticker-arrow right"><span>→</span></div></div>
+<div class="ticker-window" id="bcr-window"><div id="bcr-arrow-left" class="ticker-arrow left hidden"><span></span></div><div id="bcr-track" class="ticker-track"></div><div id="bcr-arrow-right" class="ticker-arrow right"><span></span></div></div>
 </div>
 <script>
 const BCR_URL='data.json';
