@@ -9,45 +9,45 @@
 html,body{margin:0;padding:0;width:100%;overflow:hidden;background:#fff}
 body{font-family:Georgia,"Times New Roman",serif}
 
-.ticker{position:relative;width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:42px;line-height:42px}
+.ticker{position:relative;width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:40px;line-height:40px}
 
 /* PESTAÑA FIJA */
-.ticker-header{position:absolute;z-index:5;left:0;top:0;height:42px;width:150px;display:flex;align-items:center;padding:0 13px;background:#111;border-right:1px solid rgba(255,255,255,.35);box-shadow:7px 0 12px rgba(0,0,0,.28);line-height:normal}
+.ticker-header{position:absolute;z-index:5;left:0;top:0;height:40px;width:150px;display:flex;align-items:center;padding:0 13px;background:#111;border-right:1px solid rgba(255,255,255,.35);box-shadow:7px 0 12px rgba(0,0,0,.28);line-height:normal}
 .ticker-header-main{display:flex;flex-direction:column;justify-content:center;line-height:1.05}
 .ticker-header-title{font-size:11px;font-weight:700;letter-spacing:.4px;color:#fff}
 .ticker-header-date{font-size:13px;font-weight:700;color:#fff;margin-top:2px}
 .ticker-header-source{font-size:8px;color:#aaa;margin-top:2px}
 
 /* ZONA REALMENTE DESLIZABLE */
-.ticker-window{position:absolute;left:150px;right:0;top:0;height:42px;overflow:hidden;touch-action:pan-x}
-.ticker-track{position:absolute;left:0;top:0;width:100%;min-width:0;height:42px;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;cursor:grab}
+.ticker-window{position:absolute;left:150px;right:0;top:0;height:40px;overflow:hidden;touch-action:pan-x}
+.ticker-track{position:absolute;left:0;top:0;width:100%;min-width:0;max-width:100%;height:40px;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;cursor:grab}
 .ticker-track::-webkit-scrollbar{display:none}
 .ticker-track.dragging{cursor:grabbing}
 
-.ticker-item{display:inline-flex;align-items:center;gap:7px;padding:0 20px;height:42px;border-right:1px solid rgba(255,255,255,.35);font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600;flex:0 0 auto}
+.ticker-item{display:inline-flex;align-items:center;gap:7px;padding:0 20px;height:40px;border-right:1px solid rgba(255,255,255,.35);font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600;flex:0 0 auto}
 .ticker-item b{color:#fff}
 .ticker-item .up{color:#20c878}
 .ticker-item .down{color:#ff3b30}
 .ticker-item .muted{color:#aaa;font-size:11px}
 
 /* FLECHA */
-.ticker-arrow{position:absolute;z-index:6;right:0;top:0;width:38px;height:42px;display:flex;align-items:center;justify-content:center;pointer-events:none;background:linear-gradient(to right,rgba(17,17,17,0),rgba(17,17,17,.92) 60%,#111 100%);color:#fff;font-family:Arial,sans-serif;font-size:21px;opacity:.9;transition:opacity .25s}
+.ticker-arrow{position:absolute;z-index:6;right:0;top:0;width:38px;height:40px;display:flex;align-items:center;justify-content:center;pointer-events:none;background:linear-gradient(to right,rgba(17,17,17,0),rgba(17,17,17,.92) 60%,#111 100%);color:#fff;font-family:Arial,sans-serif;font-size:21px;opacity:.9;transition:opacity .25s}
 .ticker-arrow span{animation:slideHint 1.5s ease-in-out infinite}
 @keyframes slideHint{0%,100%{transform:translateX(0);opacity:.5}50%{transform:translateX(5px);opacity:1}}
 .ticker-arrow.hidden{opacity:0}
 
 @media(max-width:600px){
-  .ticker{height:36px;line-height:36px}
-  .ticker-header{width:126px;height:36px;padding:0 9px}
-  .ticker-header-main{width:100%;align-items:flex-start;justify-content:center;line-height:1.02}
+  .ticker{height:40px;line-height:40px}
+  .ticker-header{width:126px;height:40px;padding:0 9px}
+  .ticker-header-main{width:100%;align-items:flex-start;justify-content:center;line-height:1.05}
   .ticker-header-title{font-size:9px}
-  .ticker-header-date{font-size:11px;margin-top:2px}
-  .ticker-header-source{font-size:7px;margin-top:2px}
-  .ticker-window{left:126px;height:36px}
-  .ticker-track{height:36px}
-  .ticker-item{height:36px;padding:0 14px;font-size:12px;gap:6px;border-right:1px solid rgba(255,255,255,.4)}
+  .ticker-header-date{font-size:11px;margin-top:0}
+  .ticker-header-source{font-size:7px;margin-top:1px}
+  .ticker-window{left:126px;height:40px}
+  .ticker-track{height:40px}
+  .ticker-item{height:40px;padding:0 14px;font-size:12px;gap:6px;border-right:1px solid rgba(255,255,255,.4)}
   .ticker-item .muted{font-size:9px}
-  .ticker-arrow{height:36px;width:34px;font-size:19px}
+  .ticker-arrow{height:40px;width:34px;font-size:19px}
 }
 </style>
 </head>
