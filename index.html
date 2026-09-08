@@ -5,32 +5,132 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Acción Rural - Mercados</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;overflow:hidden;background:#fff}body{font-family:Georgia,"Times New Roman",serif}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;overflow:hidden;background:#fff}
+body{font-family:Georgia,"Times New Roman",serif}
+
 .ticker{position:relative;width:100%;overflow:hidden;white-space:nowrap;background:#111;color:#eee;height:42px;line-height:42px}
+
+/* PESTAÑA FIJA */
 .ticker-header{position:absolute;z-index:5;left:0;top:0;height:42px;width:150px;display:flex;align-items:center;padding:0 13px;background:#111;border-right:1px solid rgba(255,255,255,.35);box-shadow:7px 0 12px rgba(0,0,0,.28);line-height:normal}
-.ticker-header-main{display:flex;flex-direction:column;justify-content:center;line-height:1.05}.ticker-header-title{font-size:11px;font-weight:700;letter-spacing:.4px;color:#fff}.ticker-header-date{font-size:13px;font-weight:700;color:#fff;margin-top:2px}.ticker-header-source{font-size:8px;color:#aaa;margin-top:2px}
+.ticker-header-main{display:flex;flex-direction:column;justify-content:center;line-height:1.05}
+.ticker-header-title{font-size:11px;font-weight:700;letter-spacing:.4px;color:#fff}
+.ticker-header-date{font-size:13px;font-weight:700;color:#fff;margin-top:2px}
+.ticker-header-source{font-size:8px;color:#aaa;margin-top:2px}
+
+/* ZONA REALMENTE DESLIZABLE */
 .ticker-window{position:absolute;left:150px;right:0;top:0;height:42px;overflow:hidden;touch-action:pan-x}
-.ticker-track{position:relative;left:0;top:0;display:flex;width:max-content;min-width:max-content;height:42px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;cursor:grab}.ticker-track::-webkit-scrollbar{display:none}.ticker-track.dragging{cursor:grabbing}
-.ticker-item{display:inline-flex;align-items:center;gap:7px;padding:0 20px;height:42px;border-right:1px solid rgba(255,255,255,.35);font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600;flex:none}.ticker-item b{color:#fff}.ticker-item .up{color:#20c878}.ticker-item .down{color:#ff3b30}.ticker-item .muted{color:#aaa;font-size:11px}
-.ticker-arrow{position:absolute;z-index:6;right:0;top:0;width:38px;height:42px;display:flex;align-items:center;justify-content:center;pointer-events:none;background:linear-gradient(to right,rgba(17,17,17,0),rgba(17,17,17,.92) 60%,#111 100%);color:#fff;font-family:Arial,sans-serif;font-size:21px;opacity:.9;transition:opacity .25s}.ticker-arrow span{animation:slideHint 1.5s ease-in-out infinite}@keyframes slideHint{0%,100%{transform:translateX(0);opacity:.5}50%{transform:translateX(5px);opacity:1}}.ticker-arrow.hidden{opacity:0}
-@media(max-width:600px){.ticker{height:36px;line-height:36px}.ticker-header{width:126px;height:36px;padding:0 9px}.ticker-header-title{font-size:9px}.ticker-header-date{font-size:11px}.ticker-header-source{font-size:7px}.ticker-window{left:126px;height:36px}.ticker-track{height:36px}.ticker-item{height:36px;padding:0 14px;font-size:12px;gap:6px;border-right:1px solid rgba(255,255,255,.4)}.ticker-item .muted{font-size:9px}.ticker-arrow{height:36px;width:34px;font-size:19px}}
+.ticker-track{position:absolute;left:0;top:0;width:100%;min-width:0;height:42px;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;cursor:grab}
+.ticker-track::-webkit-scrollbar{display:none}
+.ticker-track.dragging{cursor:grabbing}
+
+.ticker-item{display:inline-flex;align-items:center;gap:7px;padding:0 20px;height:42px;border-right:1px solid rgba(255,255,255,.35);font-family:Georgia,"Times New Roman",serif;font-size:15px;font-weight:600;flex:0 0 auto}
+.ticker-item b{color:#fff}
+.ticker-item .up{color:#20c878}
+.ticker-item .down{color:#ff3b30}
+.ticker-item .muted{color:#aaa;font-size:11px}
+
+/* FLECHA */
+.ticker-arrow{position:absolute;z-index:6;right:0;top:0;width:38px;height:42px;display:flex;align-items:center;justify-content:center;pointer-events:none;background:linear-gradient(to right,rgba(17,17,17,0),rgba(17,17,17,.92) 60%,#111 100%);color:#fff;font-family:Arial,sans-serif;font-size:21px;opacity:.9;transition:opacity .25s}
+.ticker-arrow span{animation:slideHint 1.5s ease-in-out infinite}
+@keyframes slideHint{0%,100%{transform:translateX(0);opacity:.5}50%{transform:translateX(5px);opacity:1}}
+.ticker-arrow.hidden{opacity:0}
+
+@media(max-width:600px){
+  .ticker{height:36px;line-height:36px}
+  .ticker-header{width:126px;height:36px;padding:0 9px}
+  .ticker-header-main{width:100%;align-items:flex-start;justify-content:center;line-height:1.02}
+  .ticker-header-title{font-size:9px}
+  .ticker-header-date{font-size:11px;margin-top:2px}
+  .ticker-header-source{font-size:7px;margin-top:2px}
+  .ticker-window{left:126px;height:36px}
+  .ticker-track{height:36px}
+  .ticker-item{height:36px;padding:0 14px;font-size:12px;gap:6px;border-right:1px solid rgba(255,255,255,.4)}
+  .ticker-item .muted{font-size:9px}
+  .ticker-arrow{height:36px;width:34px;font-size:19px}
+}
 </style>
 </head>
 <body>
 <div id="bcr" class="ticker" aria-label="Mercado de granos BCR">
-<div class="ticker-header"><div class="ticker-header-main"><div class="ticker-header-title">PIZARRA DEL</div><div id="bcr-date" class="ticker-header-date">--/--/----</div><div class="ticker-header-source">Fuente: BCR</div></div></div>
-<div class="ticker-window" id="bcr-window"><div id="bcr-track" class="ticker-track"></div><div id="bcr-arrow" class="ticker-arrow"><span>→</span></div></div>
+  <div class="ticker-header">
+    <div class="ticker-header-main">
+      <div class="ticker-header-title">PIZARRA DEL</div>
+      <div id="bcr-date" class="ticker-header-date">--/--/----</div>
+      <div class="ticker-header-source">Fuente: BCR</div>
+    </div>
+  </div>
+  <div class="ticker-window" id="bcr-window">
+    <div id="bcr-track" class="ticker-track"></div>
+    <div id="bcr-arrow" class="ticker-arrow"><span>→</span></div>
+  </div>
 </div>
+
 <script>
 const BCR_URL='data.json';
-function fmt(n){return n==null?'S/C':new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(n)}
-function bcrItem(label,value,delta){const variation=delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`;return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${variation}</span>`}
-function renderBCR(d){document.getElementById('bcr-date').textContent=d.date||'--/--/----';let html='';html+=bcrItem('Soja',d.values?.soja,d.changes?.soja);html+=bcrItem('Maíz',d.values?.maiz,d.changes?.maiz);html+=bcrItem('Trigo',d.values?.trigo,d.changes?.trigo);html+=bcrItem('Girasol',d.values?.girasol,d.changes?.girasol);html+=bcrItem('Sorgo',d.values?.sorgo,d.changes?.sorgo);const track=document.getElementById('bcr-track');track.innerHTML=html;track.scrollLeft=0;updateArrow()}
-function updateArrow(){const track=document.getElementById('bcr-track');const arrow=document.getElementById('bcr-arrow');const canScroll=track.scrollWidth>track.clientWidth+5;const atEnd=track.scrollLeft+track.clientWidth>=track.scrollWidth-5;arrow.classList.toggle('hidden',!canScroll||atEnd)}
-async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json())}catch(e){console.error('BCR:',e)}}
-const track=document.getElementById('bcr-track');track.addEventListener('scroll',updateArrow,{passive:true});window.addEventListener('resize',updateArrow);
-let isDown=false,startX=0,startScroll=0;track.addEventListener('mousedown',e=>{isDown=true;track.classList.add('dragging');startX=e.pageX;startScroll=track.scrollLeft});window.addEventListener('mouseup',()=>{isDown=false;track.classList.remove('dragging')});track.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();track.scrollLeft=startScroll-(e.pageX-startX)});
-loadBCR();setInterval(loadBCR,1800000);
+
+function fmt(n){
+  return n==null?'S/C':new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(n);
+}
+
+function bcrItem(label,value,delta){
+  const variation=delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`;
+  return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${variation}</span>`;
+}
+
+function renderBCR(d){
+  document.getElementById('bcr-date').textContent=d.date||'--/--/----';
+  let html='';
+  html+=bcrItem('Soja',d.values?.soja,d.changes?.soja);
+  html+=bcrItem('Maíz',d.values?.maiz,d.changes?.maiz);
+  html+=bcrItem('Trigo',d.values?.trigo,d.changes?.trigo);
+  html+=bcrItem('Girasol',d.values?.girasol,d.changes?.girasol);
+  html+=bcrItem('Sorgo',d.values?.sorgo,d.changes?.sorgo);
+  const track=document.getElementById('bcr-track');
+  track.innerHTML=html;
+  track.scrollLeft=0;
+  updateArrow();
+}
+
+function updateArrow(){
+  const track=document.getElementById('bcr-track');
+  const arrow=document.getElementById('bcr-arrow');
+  const canScroll=track.scrollWidth>track.clientWidth+5;
+  const atEnd=track.scrollLeft+track.clientWidth>=track.scrollWidth-5;
+  arrow.classList.toggle('hidden',!canScroll||atEnd);
+}
+
+async function loadBCR(){
+  try{
+    const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});
+    if(r.ok)renderBCR(await r.json());
+  }catch(e){console.error('BCR:',e)}
+}
+
+const track=document.getElementById('bcr-track');
+track.addEventListener('scroll',updateArrow,{passive:true});
+window.addEventListener('resize',updateArrow);
+
+/* Arrastre con mouse en computadora */
+let isDown=false,startX=0,startScroll=0;
+track.addEventListener('mousedown',e=>{
+  isDown=true;
+  track.classList.add('dragging');
+  startX=e.pageX;
+  startScroll=track.scrollLeft;
+});
+window.addEventListener('mouseup',()=>{
+  isDown=false;
+  track.classList.remove('dragging');
+});
+track.addEventListener('mousemove',e=>{
+  if(!isDown)return;
+  e.preventDefault();
+  track.scrollLeft=startScroll-(e.pageX-startX);
+});
+
+loadBCR();
+setInterval(loadBCR,1800000);
 </script>
 </body>
 </html>
