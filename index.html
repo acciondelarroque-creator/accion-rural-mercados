@@ -32,87 +32,24 @@ body{font-family:Georgia,"Times New Roman",serif}
 @keyframes slideHint{0%,100%{transform:translateX(0);opacity:.55}50%{transform:translateX(6px);opacity:1}}
 @keyframes slideHintLeft{0%,100%{transform:translateX(0);opacity:.55}50%{transform:translateX(-6px);opacity:1}}
 .ticker-arrow.hidden{opacity:0}
-@media(min-width:601px){
-  .ticker-header{width:150px}
-  .ticker-window{left:150px}
-  .ticker-arrow{width:38px}
-}
-@media(max-width:600px){
-  .ticker-header{width:126px;height:40px;padding:0 8px}
-  .ticker-window{left:126px;height:40px}
-  .ticker-track{height:40px}
-  .ticker-item{height:40px;padding:0 14px;font-size:12px;gap:6px}
-  .ticker-arrow{height:40px;width:34px;font-size:20px}
-}
+@media(min-width:601px){.ticker-header{width:150px}.ticker-window{left:150px}.ticker-arrow{width:38px}}
+@media(max-width:600px){.ticker-header{width:126px;height:40px;padding:0 8px}.ticker-window{left:126px;height:40px}.ticker-track{height:40px}.ticker-item{height:40px;padding:0 14px;font-size:12px;gap:6px}.ticker-arrow{height:40px;width:34px;font-size:20px}}
 </style>
 </head>
 <body>
 <div id="bcr" class="ticker" aria-label="Mercado de granos BCR">
-  <div class="ticker-header">
-    <div class="ticker-header-main">
-      <div class="ticker-header-top">
-        <div class="ticker-header-title">Pizarra:</div>
-        <div id="bcr-date" class="ticker-header-date">--/--/--</div>
-      </div>
-      <div class="ticker-header-source">Fuente: BCR</div>
-    </div>
-  </div>
-  <div class="ticker-window" id="bcr-window">
-    <div id="bcr-arrow-left" class="ticker-arrow left hidden"><span>←</span></div>
-    <div id="bcr-track" class="ticker-track"></div>
-    <div id="bcr-arrow-right" class="ticker-arrow right"><span>→</span></div>
-  </div>
+<div class="ticker-header"><div class="ticker-header-main"><div class="ticker-header-top"><div class="ticker-header-title">Pizarra:</div><div id="bcr-date" class="ticker-header-date">--/--/--</div></div><div class="ticker-header-source">Fuente: BCR</div></div></div>
+<div class="ticker-window" id="bcr-window"><div id="bcr-arrow-left" class="ticker-arrow left hidden"><span>←</span></div><div id="bcr-track" class="ticker-track"></div><div id="bcr-arrow-right" class="ticker-arrow right"><span>→</span></div></div>
 </div>
 <script>
 const BCR_URL='data.json';
-function shortDate(s){
-  if(!s)return'--/--/--';
-  const p=s.split('/');
-  return p.length===3?p[0]+'/'+p[1]+'/'+p[2].slice(-2):s;
-}
+function shortDate(s){if(!s)return'--/--/--';const p=s.split('/');return p.length===3?p[0]+'/'+p[1]+'/'+p[2].slice(-2):s}
 function fmt(n){return n==null?'S/C':new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(n)}
-function bcrItem(label,value,delta){
-  const variation=delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`;
-  return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${variation}</span>`
-}
-function renderBCR(d){
-  document.getElementById('bcr-date').textContent=shortDate(d.date);
-  let html='';
-  html+=bcrItem('Soja',d.values?.soja,d.changes?.soja);
-  html+=bcrItem('Maíz',d.values?.maiz,d.changes?.maiz);
-  html+=bcrItem('Trigo',d.values?.trigo,d.changes?.trigo);
-  html+=bcrItem('Girasol',d.values?.girasol,d.changes?.girasol);
-  html+=bcrItem('Sorgo',d.values?.sorgo,d.changes?.sorgo);
-  const track=document.getElementById('bcr-track');
-  track.innerHTML=html;
-  track.scrollLeft=0;
-  updateArrows();
-}
-function updateArrows(){
-  const track=document.getElementById('bcr-track');
-  const left=document.getElementById('bcr-arrow-left');
-  const right=document.getElementById('bcr-arrow-right');
-  const canScroll=track.scrollWidth>track.clientWidth+5;
-  const atStart=track.scrollLeft<=5;
-  const atEnd=track.scrollLeft+track.clientWidth>=track.scrollWidth-5;
-  left.classList.toggle('hidden',!canScroll||atStart);
-  right.classList.toggle('hidden',!canScroll||atEnd);
-}
-async function loadBCR(){
-  try{
-    const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});
-    if(r.ok)renderBCR(await r.json());
-  }catch(e){console.error('BCR:',e)}
-}
-const track=document.getElementById('bcr-track');
-track.addEventListener('scroll',updateArrows,{passive:true});
-window.addEventListener('resize',updateArrows);
-let isDown=false,startX=0,startScroll=0;
-track.addEventListener('mousedown',e=>{isDown=true;track.classList.add('dragging');startX=e.pageX;startScroll=track.scrollLeft});
-window.addEventListener('mouseup',()=>{isDown=false;track.classList.remove('dragging')});
-track.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();track.scrollLeft=startScroll-(e.pageX-startX)});
-loadBCR();
-setInterval(loadBCR,1800000);
+function bcrItem(label,value,delta){const variation=delta==null?'':`<span class="${delta>0?'up':delta<0?'down':''}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`;return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${variation}</span>`}
+function renderBCR(d){document.getElementById('bcr-date').textContent=shortDate(d.date);let html='';html+=bcrItem('Soja',d.values?.soja,d.changes?.soja);html+=bcrItem('Maíz',d.values?.maiz,d.changes?.maiz);html+=bcrItem('Trigo',d.values?.trigo,d.changes?.trigo);html+=bcrItem('Girasol',d.values?.girasol,d.changes?.girasol);html+=bcrItem('Sorgo',d.values?.sorgo,d.changes?.sorgo);const track=document.getElementById('bcr-track');track.innerHTML=html;track.scrollLeft=0;updateArrows()}
+function updateArrows(){const track=document.getElementById('bcr-track');const left=document.getElementById('bcr-arrow-left');const right=document.getElementById('bcr-arrow-right');const canScroll=track.scrollWidth>track.clientWidth+5;left.classList.toggle('hidden',!canScroll);right.classList.toggle('hidden',!canScroll)}
+async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json())}catch(e){console.error('BCR:',e)}}
+const track=document.getElementById('bcr-track');track.addEventListener('scroll',updateArrows,{passive:true});window.addEventListener('resize',updateArrows);let isDown=false,startX=0,startScroll=0;track.addEventListener('mousedown',e=>{isDown=true;track.classList.add('dragging');startX=e.pageX;startScroll=track.scrollLeft});window.addEventListener('mouseup',()=>{isDown=false;track.classList.remove('dragging')});track.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();track.scrollLeft=startScroll-(e.pageX-startX)});loadBCR();setInterval(loadBCR,1800000);
 </script>
 </body>
 </html>
