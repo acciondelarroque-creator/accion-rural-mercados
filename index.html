@@ -14,7 +14,7 @@ body{font-family:Georgia,"Times New Roman",serif}
 .ticker-header-top{display:flex;flex-direction:column;align-items:center;gap:2px;white-space:nowrap}
 .ticker-header-title{font-size:13px;font-weight:700;letter-spacing:.2px;color:#fff}
 .ticker-header-date{font-size:11px;font-weight:700;color:#fff}
-.ticker-header-source{font-size:7px;color:#eee;margin-top:3px}
+.ticker-header-source{display:none}
 .ticker-window{position:absolute;left:100px;right:0;top:0;height:40px;overflow:hidden;touch-action:pan-x;background:#B58A3A}
 .ticker-track{position:absolute;left:0;top:0;width:100%;min-width:0;max-width:100%;height:40px;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;cursor:grab;background:#B58A3A;padding-left:22px}
 .ticker-track::-webkit-scrollbar{display:none}
@@ -25,6 +25,7 @@ body{font-family:Georgia,"Times New Roman",serif}
 .ticker-item .down{color:#b51f1f}
 .ticker-item .flat{color:#eee;font-size:15px;font-weight:600}
 .ticker-item .muted{color:#eee;font-size:11px}
+.ticker-source-item{display:inline-flex;align-items:center;height:40px;padding:0 20px;font-family:Arial,sans-serif;font-size:11px;font-weight:600;color:#eee;flex:0 0 auto}
 .ticker-arrow{position:absolute;z-index:6;top:0;width:38px;height:40px;display:flex;align-items:center;justify-content:center;pointer-events:none;background:linear-gradient(to right,rgba(181,138,58,.96),rgba(181,138,58,0));color:#fff;opacity:1;transition:opacity .25s}
 .ticker-arrow.left{left:0;background:linear-gradient(to right,#B58A3A,rgba(181,138,58,.92),rgba(181,138,58,0))}
 .ticker-arrow.right{right:0;background:linear-gradient(to left,#B58A3A,rgba(181,138,58,.92),rgba(181,138,58,0))}
@@ -36,13 +37,13 @@ body{font-family:Georgia,"Times New Roman",serif}
 @keyframes slideHint{0%,100%{margin-left:0;opacity:.55}50%{margin-left:6px;opacity:1}}
 @keyframes slideHintLeft{0%,100%{margin-left:0;opacity:.55}50%{margin-left:-6px;opacity:1}}
 .ticker-arrow.hidden{opacity:0}
-@media(min-width:601px){.ticker-header{width:100px}.ticker-window{left:100px}.ticker-arrow{width:38px}.ticker-header-title{font-size:14px}.ticker-header-date{font-size:11px}.ticker-header-source{font-size:8px;margin-top:3px}}
-@media(max-width:600px){.ticker-header{width:88px;height:40px;padding:0 5px}.ticker-window{left:88px;height:40px}.ticker-track{height:40px;padding-left:18px}.ticker-item{height:40px;padding:0 14px;font-size:12px;gap:6px}.ticker-item .flat{font-size:12px}.ticker-arrow{height:40px;width:38px}.ticker-header-title{font-size:11px}.ticker-header-date{font-size:10px}.ticker-header-source{font-size:7px;margin-top:2px}}
+@media(min-width:601px){.ticker-header{width:100px}.ticker-window{left:100px}.ticker-arrow{width:38px}.ticker-header-title{font-size:14px}.ticker-header-date{font-size:11px}.ticker-header-source{display:none}}
+@media(max-width:600px){.ticker-header{width:88px;height:40px;padding:0 5px}.ticker-window{left:88px;height:40px}.ticker-track{height:40px;padding-left:18px}.ticker-item{height:40px;padding:0 14px;font-size:12px;gap:6px}.ticker-item .flat{font-size:12px}.ticker-source-item{height:40px;padding:0 14px;font-size:9px}.ticker-arrow{height:40px;width:38px}.ticker-header-title{font-size:11px}.ticker-header-date{font-size:10px}.ticker-header-source{display:none}}
 </style>
 </head>
 <body>
 <div id="bcr" class="ticker" aria-label="Mercado de granos BCR">
-<div class="ticker-header"><div class="ticker-header-main"><div class="ticker-header-top"><div class="ticker-header-title">Pizarra</div><div id="bcr-date" class="ticker-header-date">--/--/--</div></div><div class="ticker-header-source">Fuente: BCR</div></div></div>
+<div class="ticker-header"><div class="ticker-header-main"><div class="ticker-header-top"><div class="ticker-header-title">Pizarra</div><div id="bcr-date" class="ticker-header-date">--/--/--</div></div></div></div>
 <div class="ticker-window" id="bcr-window"><div id="bcr-arrow-left" class="ticker-arrow left hidden"><span></span></div><div id="bcr-track" class="ticker-track"></div><div id="bcr-arrow-right" class="ticker-arrow right"><span></span></div></div>
 </div>
 <script>
@@ -50,7 +51,7 @@ const BCR_URL='data.json';
 function shortDate(s){if(!s)return'--/--/--';const p=s.split('/');return p.length===3?p[0]+'/'+p[1]+'/'+p[2].slice(-2):s}
 function fmt(n){return n==null?'S/C':new Intl.NumberFormat('es-AR',{maximumFractionDigits:0}).format(n)}
 function bcrItem(label,value,delta){const variation=delta==null?'':`<span class="${delta>0?'up':delta<0?'down':'flat'}">${delta>0?'▲':delta<0?'▼':'='} ${Math.abs(delta).toFixed(2)}%</span>`;return `<span class="ticker-item"><b>${label}</b> $${fmt(value)}/tn ${variation}</span>`}
-function renderBCR(d){document.getElementById('bcr-date').textContent=shortDate(d.date);let html='';html+=bcrItem('Soja',d.values?.soja,d.changes?.soja);html+=bcrItem('Maíz',d.values?.maiz,d.changes?.maiz);html+=bcrItem('Trigo',d.values?.trigo,d.changes?.trigo);html+=bcrItem('Girasol',d.values?.girasol,d.changes?.girasol);html+=bcrItem('Sorgo',d.values?.sorgo,d.changes?.sorgo);const track=document.getElementById('bcr-track');track.innerHTML=html;track.scrollLeft=0;updateArrows()}
+function renderBCR(d){document.getElementById('bcr-date').textContent=shortDate(d.date);let html='';html+=bcrItem('Soja',d.values?.soja,d.changes?.soja);html+=bcrItem('Maíz',d.values?.maiz,d.changes?.maiz);html+=bcrItem('Trigo',d.values?.trigo,d.changes?.trigo);html+=bcrItem('Girasol',d.values?.girasol,d.changes?.girasol);html+=bcrItem('Sorgo',d.values?.sorgo,d.changes?.sorgo);html+='<span class="ticker-source-item">Fuente: BCR</span>';const track=document.getElementById('bcr-track');track.innerHTML=html;track.scrollLeft=0;updateArrows()}
 function updateArrows(){const track=document.getElementById('bcr-track');const left=document.getElementById('bcr-arrow-left');const right=document.getElementById('bcr-arrow-right');const canScroll=track.scrollWidth>track.clientWidth+5;left.classList.toggle('hidden',!canScroll);right.classList.toggle('hidden',!canScroll)}
 async function loadBCR(){try{const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok)renderBCR(await r.json())}catch(e){console.error('BCR:',e)}}
 const track=document.getElementById('bcr-track');track.addEventListener('scroll',updateArrows,{passive:true});window.addEventListener('resize',updateArrows);let isDown=false,startX=0,startScroll=0;track.addEventListener('mousedown',e=>{isDown=true;track.classList.add('dragging');startX=e.pageX;startScroll=track.scrollLeft});window.addEventListener('mouseup',()=>{isDown=false;track.classList.remove('dragging')});track.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();track.scrollLeft=startScroll-(e.pageX-startX)});loadBCR();setInterval(loadBCR,1800000);
