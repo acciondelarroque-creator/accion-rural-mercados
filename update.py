@@ -112,54 +112,28 @@ def obtener_chicago(soup):
             continue
 
         dato = {"trigo": (None, None), "maiz": (None, None), "soja": (None, None)}
-
-        # Filas completas: posición + precio/variación de trigo, maíz y soja.
         if len(textos) >= 7:
             dato["trigo"] = (limpiar_numero(textos[1]), limpiar_numero(textos[2]))
             dato["maiz"] = (limpiar_numero(textos[3]), limpiar_numero(textos[4]))
             dato["soja"] = (limpiar_numero(textos[5]), limpiar_numero(textos[6]))
-
-        # BCR omite las celdas vacías en algunos vencimientos. En esos casos,
-        # Nov-26 (y otros vencimientos de soja) llega como: posición, precio, variación.
-        else:
-            mes = mes_num.get(posicion[:3])
-            if len(textos) == 3 and mes in soybean_months:
-                dato["soja"] = (limpiar_numero(textos[1]), limpiar_numero(textos[2]))
+        elif len(textos) == 3 and mes_num.get(posicion[:3]) in soybean_months:
+            dato["soja"] = (limpiar_numero(textos[1]), limpiar_numero(textos[2]))
 
         posiciones[posicion] = dato
 
     if not posiciones:
         raise RuntimeError("No se pudieron interpretar las posiciones Chicago")
 
-    now = datetime.now(timezone.utc)
-    calendarios = {"soja": [1, 3, 5, 7, 8, 9, 11], "maiz": [3, 5, 7, 9, 12], "trigo": [3, 5, 7, 9, 12]}
+    # Contratos de referencia definidos para la marquesina.
+    # Soja Chicago debe usar Nov-26 (contrato acordado), no el primer vencimiento disponible.
+    referencias_fijas = {
+        "soja": "Nov-26",
+        "maiz": "Dic-26",
+        "trigo": "Dic-26",
+    }
     referencias = {}
 
-    for producto, calendario in calendarios.items():
-        candidatos = []
-        for mes in calendario:
-            anio = now.year if mes > now.month else now.year + 1
-            candidatos.append((anio, mes))
-        anio, mes = min(candidatos)
-        etiqueta = f"{meses[mes]}-{str(anio)[-2:]}"
-
-        # Si el vencimiento esperado no está publicado, tomar el primer vencimiento
-        # posterior al mes actual que tenga una cotización válida para ese producto.
-        if etiqueta not in posiciones or posiciones[etiqueta][producto][0] is None:
-            disponibles = []
-            for pos, datos in posiciones.items():
-                if datos[producto][0] is None:
-                    continue
-                m = mes_num.get(pos[:3])
-                if m is None:
-                    continue
-                anio_pos = 2000 + int(pos[-2:])
-                if (anio_pos > now.year or (anio_pos == now.year and m > now.month)):
-                    disponibles.append((anio_pos, m, pos))
-            if disponibles:
-                disponibles.sort()
-                etiqueta = disponibles[0][2]
-
+    for producto, etiqueta in referencias_fijas.items():
         precio, variacion = posiciones.get(etiqueta, {}).get(producto, (None, None))
         referencias[producto] = {"contract": etiqueta, "value": precio, "change": variacion}
 
