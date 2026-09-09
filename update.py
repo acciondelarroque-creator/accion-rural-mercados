@@ -97,8 +97,7 @@ def obtener_chicago(soup):
     fechas = re.findall(r"\d{2}/\d{2}/\d{4}", texto_tabla)
     fecha = max(fechas, key=lambda f: datetime.strptime(f, "%d/%m/%Y")) if fechas else None
 
-    # Referencias acordadas para la marquesina: una sola posición por cultivo.
-    # En septiembre de 2026: Soja Nov-26, Maíz Dic-26 y Trigo Dic-26.
+    # Posiciones de referencia acordadas para la marquesina.
     referencias_fijas = {
         "soja": "Nov-26",
         "maiz": "Dic-26",
@@ -111,37 +110,34 @@ def obtener_chicago(soup):
         textos = [c.get_text(" ", strip=True) for c in celdas]
         if not textos:
             continue
-
         posicion = textos[0]
         if not re.match(r"^[A-Z][a-z]{2}-\d{2}$", posicion):
             continue
-
-        # La BCR omite las celdas vacías en algunas posiciones. Por eso no
-        # se debe interpretar una posición por cantidad de celdas HTML.
         numeros = [limpiar_numero(t) for t in textos[1:]]
         numeros = [n for n in numeros if n is not None]
         filas[posicion] = numeros
 
     referencias = {}
-
     for producto, etiqueta in referencias_fijas.items():
         numeros = filas.get(etiqueta, [])
         precio = None
         variacion = None
 
         if etiqueta == "Nov-26" and producto == "soja":
-            # Nov-26 tiene exclusivamente la cotización de soja:
-            # 483,65 / 2,57. No debe confundirse con Dic-26.
+            # Nov-26: solo aparece la cotización de Soja.
             if len(numeros) >= 2:
                 precio, variacion = numeros[0], numeros[1]
+
         elif etiqueta == "Dic-26":
-            # Dic-26 presenta, en orden, trigo, maíz y soja. Tomamos
-            # explícitamente el par correspondiente al cultivo solicitado.
+            # En Dic-26, BCR presenta en este orden:
+            # Trigo Chicago/1: 274,48 / 4,87
+            # Trigo Chicago/2: 300,94 / 6,43
+            # Maíz Chicago/3: 210,03 / -1,57
+            # Para la marquesina usamos Trigo Chicago/2 y Maíz Chicago/3.
             if len(numeros) >= 6:
                 pares = {
-                    "trigo": (numeros[0], numeros[1]),
-                    "maiz": (numeros[2], numeros[3]),
-                    "soja": (numeros[4], numeros[5]),
+                    "trigo": (numeros[2], numeros[3]),
+                    "maiz": (numeros[4], numeros[5]),
                 }
                 precio, variacion = pares[producto]
 
@@ -149,10 +145,7 @@ def obtener_chicago(soup):
 
     faltantes = [k for k, v in referencias.items() if v["value"] is None]
     if faltantes:
-        raise RuntimeError(
-            "No se pudieron obtener las posiciones Chicago de referencia: "
-            + ", ".join(faltantes)
-        )
+        raise RuntimeError("No se pudieron obtener las posiciones Chicago de referencia: " + ", ".join(faltantes))
 
     return fecha, referencias
 
