@@ -1,10 +1,10 @@
 {
   "values": {
-    "soja": 560000.0,
-    "maiz": 293000.0,
-    "trigo": 346000.0,
+    "soja": 556000.0,
+    "maiz": null,
+    "trigo": null,
     "girasol": null,
     "sorgo": null
   },
-  "date": "07/09/2026"
+  "date": "08/09/2026"
 }
