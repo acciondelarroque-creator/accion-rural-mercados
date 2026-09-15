@@ -16,7 +16,7 @@
     "girasol": null,
     "sorgo": -0.07
   },
-  "updated": "2026-09-15T18:10:51.880992+00:00",
+  "updated": "2026-09-15T18:14:27.092Z",
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
@@ -38,17 +38,25 @@
     }
   },
   "mag": {
-    "source": "Mercado Agroganadero de Cañuelas (MAG)",
-    "url": "https://www.grupoguarino.com.ar/precios-mag/",
+    "source": "Guarino Producciones - Mercado Agroganadero de Cañuelas (MAG)",
+    "url": "https://www.grupoguarino.com.ar/historicos/",
     "date": "15/09/2026",
     "unit": "$/kg vivo",
     "values": {
-      "inmag": 4155.89,
-      "igmag": 3971.8
+      "novillos": 4650,
+      "novillitos": 5300,
+      "vaquillonas": 5250,
+      "vacas": 4100,
+      "toros": 3700,
+      "conserva": 3000
     },
     "changes": {
-      "inmag": -4.07,
-      "igmag": 5.73
+      "novillos": null,
+      "novillitos": null,
+      "vaquillonas": null,
+      "vacas": null,
+      "toros": null,
+      "conserva": null
     }
   }
 }
