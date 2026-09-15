@@ -3,20 +3,20 @@
   "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
   "date": "14/09/2026",
   "values": {
-    "soja": 555000.0,
-    "maiz": 295200.0,
-    "trigo": 344655.0,
+    "soja": 555000,
+    "maiz": 295200,
+    "trigo": 344655,
     "girasol": null,
-    "sorgo": 275700.0
+    "sorgo": 275700
   },
   "changes": {
-    "soja": 0.0,
+    "soja": 0,
     "maiz": -1.27,
     "trigo": 1.37,
     "girasol": null,
     "sorgo": -0.07
   },
-  "updated": "2026-09-15T18:07:48.952281+00:00",
+  "updated": "2026-09-15T18:08:14.896Z",
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
@@ -40,7 +40,7 @@
   "mag": {
     "source": "Mercado Agroganadero de Cañuelas (MAG)",
     "url": "https://www.mercadoagroganadero.com.ar/dll/hacienda1.dll/haciinfo000002",
-    "date": null,
+    "date": "15/09/2026",
     "unit": "$/kg vivo",
     "values": {
       "novillos": 4146.54,
