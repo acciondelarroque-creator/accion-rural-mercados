@@ -3,6 +3,7 @@ import os
 import re
 import unicodedata
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
@@ -188,9 +189,8 @@ def main():
     chicago_response.raise_for_status()
     fecha_chicago, chicago = obtener_chicago(BeautifulSoup(chicago_response.text, "html.parser"))
 
-    mag_response = requests.get(MAG_URL, headers=headers, timeout=30)
-    mag_response.raise_for_status()
-    fecha_mag, mag = obtener_mag(BeautifulSoup(mag_response.text, "html.parser"))
+    ahora_ar = datetime.now(ZoneInfo("America/Argentina/Buenos_Aires"))
+    actualizar_mag = ahora_ar.weekday() in (1, 2, 4)  # martes, miércoles y viernes
 
     anterior_estado = cargar_json(STATE_FILE)
     anterior = anterior_estado.get("values", {})
@@ -216,15 +216,19 @@ def main():
         "contracts": {k: v["contract"] for k, v in chicago.items()}
     }
 
-    mag_anterior = datos.get("mag", {}).get("values", {})
-    datos["mag"] = {
-        "source": "Mercado Agroganadero de Cañuelas (MAG)",
-        "url": MAG_URL,
-        "date": fecha_mag,
-        "unit": "$/kg vivo",
-        "values": mag,
-        "changes": calcular_variaciones(mag, mag_anterior)
-    }
+    if actualizar_mag:
+        mag_response = requests.get("https://www.grupoguarino.com.ar/historicos/", headers=headers, timeout=30)
+        mag_response.raise_for_status()
+        fecha_mag, mag = obtener_mag(BeautifulSoup(mag_response.text, "html.parser"))
+        mag_anterior = datos.get("mag", {}).get("values", {})
+        datos["mag"] = {
+            "source": "Guarino Producciones - Mercado Agroganadero de Cañuelas (MAG)",
+            "url": "https://www.grupoguarino.com.ar/historicos/",
+            "date": fecha_mag,
+            "unit": "$/kg vivo",
+            "values": mag,
+            "changes": calcular_variaciones(mag, mag_anterior)
+        }
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=2)
