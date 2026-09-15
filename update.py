@@ -151,76 +151,31 @@ def obtener_chicago(soup):
 
 
 
-MAG_URL = "https://www.grupoguarino.com.ar/"
-# Fuente única para MAG/Cañuelas: Grupo Guarino.
+MAG_URL = "https://www.grupoguarino.com.ar/precios-mag/"
 
 def obtener_mag(soup):
-    tabla = None
-    for table in soup.find_all("table"):
-        texto = normalizar(table.get_text(" ", strip=True))
-        if "novillos" in texto and "novillitos" in texto and "vaquillonas" in texto and "vacas" in texto:
-            tabla = table
-            break
-    if tabla is None:
-        raise RuntimeError("No se encontró la tabla de precios del MAG de Cañuelas")
+    texto = soup.get_text(" ", strip=True)
+    fechas = re.findall(r"\d{1,2} de [a-záéíóú]+ de \d{4}", texto, flags=re.I)
+    fecha = None
+    meses = {"enero":1,"febrero":2,"marzo":3,"abril":4,"mayo":5,"junio":6,"julio":7,"agosto":8,"septiembre":9,"octubre":10,"noviembre":11,"diciembre":12}
+    if fechas:
+        m = re.match(r"(\d{1,2}) de ([a-záéíóú]+) de (\d{4})", fechas[0], flags=re.I)
+        if m:
+            fecha = f"{int(m.group(1)):02d}/{meses[normalizar(m.group(2))]:02d}/{m.group(3)}"
 
-    texto_tabla = tabla.get_text(" ", strip=True)
-    fechas = re.findall(r"\d{2}/\d{2}/\d{4}", texto_tabla)
-    fecha = max(fechas, key=lambda f: datetime.strptime(f, "%d/%m/%Y")) if fechas else None
-
-    valores = {}
-    categoria_actual = None
-    categorias = {
-        "novillos": "novillos",
-        "novillitos": "novillitos",
-        "vaquillonas": "vaquillonas",
-        "vacas": "vacas",
-        "toros": "toros",
-        "mej": "mej",
+    patrones = {
+        "inmag": r"INMAG\s*([\d\.,]+)",
+        "igmag": r"IGMAG\s*([\d\.,]+)",
+        "arrendamiento": r"Índice de Arrendamiento\s*([\d\.,]+)"
     }
-
-    for fila in tabla.find_all("tr"):
-        textos = [c.get_text(" ", strip=True) for c in fila.find_all(["th", "td"])]
-        if not textos:
-            continue
-
-        primero = normalizar(textos[0])
-        for nombre, clave in categorias.items():
-            if primero.startswith(nombre):
-                categoria_actual = clave
-                break
-
-        # Las filas inmediatamente posteriores a cada grupo contienen
-        # el promedio consolidado en la cuarta celda.
-        if categoria_actual and any("-------" in t for t in textos):
-            numeros = [limpiar_numero(t) for t in textos]
-            numeros = [n for n in numeros if n is not None]
-            if numeros:
-                valores[categoria_actual] = numeros[0]
-
-    # Fallback para tablas donde la línea separadora pierde el contenido.
-    if len(valores) < 4:
-        valores = {}
-        categoria_actual = None
-        for fila in tabla.find_all("tr"):
-            textos = [c.get_text(" ", strip=True) for c in fila.find_all(["th", "td"])]
-            if not textos:
-                continue
-            primero = normalizar(textos[0])
-            for nombre, clave in categorias.items():
-                if primero.startswith(nombre):
-                    categoria_actual = clave
-                    break
-            if categoria_actual and not textos[0] and len(textos) >= 4:
-                candidato = limpiar_numero(textos[3])
-                if candidato is not None:
-                    valores[categoria_actual] = candidato
-
-    if not valores:
-        raise RuntimeError("El MAG no devolvió promedios reconocibles")
-
+    valores = {}
+    for clave, patron in patrones.items():
+        m = re.search(patron, texto, flags=re.I)
+        if m:
+            valores[clave] = limpiar_numero(m.group(1))
+    if len(valores) < 2:
+        raise RuntimeError("Guarino no devolvió los índices MAG reconocibles")
     return fecha, valores
-
 
 def main():
     headers = {"User-Agent": "Mozilla/5.0 (compatible; AccionRuralBot/1.0)"}
