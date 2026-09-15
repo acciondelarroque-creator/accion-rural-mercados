@@ -94,7 +94,7 @@ def obtener_chicago(soup):
         raise RuntimeError("No se encontró la tabla Chicago/Kansas de la BCR")
 
     texto_tabla = tabla.get_text(" ", strip=True)
-    fechas = re.findall(r"\d{2}/\d{2}/\d{4}", texto_tabla)
+    fechas = re.findall(r"\d{2}/\d{2}/\d{4}", soup.get_text(" ", strip=True))
     fecha = max(fechas, key=lambda f: datetime.strptime(f, "%d/%m/%Y")) if fechas else None
 
     # Posiciones de referencia acordadas para la marquesina.
