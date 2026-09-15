@@ -151,7 +151,8 @@ def obtener_chicago(soup):
 
 
 
-MAG_URL = "https://www.mercadoagroganadero.com.ar/dll/hacienda1.dll/haciinfo000002"
+MAG_URL = "https://www.grupoguarino.com.ar/"
+# Fuente única para MAG/Cañuelas: Grupo Guarino.
 
 def obtener_mag(soup):
     tabla = None
