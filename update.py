@@ -150,6 +150,77 @@ def obtener_chicago(soup):
     return fecha, referencias
 
 
+
+MAG_URL = "https://www.mercadoagroganadero.com.ar/dll/hacienda1.dll/haciinfo000002"
+
+def obtener_mag(soup):
+    tabla = None
+    for table in soup.find_all("table"):
+        texto = normalizar(table.get_text(" ", strip=True))
+        if "novillos" in texto and "novillitos" in texto and "vaquillonas" in texto and "vacas" in texto:
+            tabla = table
+            break
+    if tabla is None:
+        raise RuntimeError("No se encontró la tabla de precios del MAG de Cañuelas")
+
+    texto_tabla = tabla.get_text(" ", strip=True)
+    fechas = re.findall(r"\d{2}/\d{2}/\d{4}", texto_tabla)
+    fecha = max(fechas, key=lambda f: datetime.strptime(f, "%d/%m/%Y")) if fechas else None
+
+    valores = {}
+    categoria_actual = None
+    categorias = {
+        "novillos": "novillos",
+        "novillitos": "novillitos",
+        "vaquillonas": "vaquillonas",
+        "vacas": "vacas",
+        "toros": "toros",
+        "mej": "mej",
+    }
+
+    for fila in tabla.find_all("tr"):
+        textos = [c.get_text(" ", strip=True) for c in fila.find_all(["th", "td"])]
+        if not textos:
+            continue
+
+        primero = normalizar(textos[0])
+        for nombre, clave in categorias.items():
+            if primero.startswith(nombre):
+                categoria_actual = clave
+                break
+
+        # Las filas inmediatamente posteriores a cada grupo contienen
+        # el promedio consolidado en la cuarta celda.
+        if categoria_actual and any("-------" in t for t in textos):
+            numeros = [limpiar_numero(t) for t in textos]
+            numeros = [n for n in numeros if n is not None]
+            if numeros:
+                valores[categoria_actual] = numeros[0]
+
+    # Fallback para tablas donde la línea separadora pierde el contenido.
+    if len(valores) < 4:
+        valores = {}
+        categoria_actual = None
+        for fila in tabla.find_all("tr"):
+            textos = [c.get_text(" ", strip=True) for c in fila.find_all(["th", "td"])]
+            if not textos:
+                continue
+            primero = normalizar(textos[0])
+            for nombre, clave in categorias.items():
+                if primero.startswith(nombre):
+                    categoria_actual = clave
+                    break
+            if categoria_actual and not textos[0] and len(textos) >= 4:
+                candidato = limpiar_numero(textos[3])
+                if candidato is not None:
+                    valores[categoria_actual] = candidato
+
+    if not valores:
+        raise RuntimeError("El MAG no devolvió promedios reconocibles")
+
+    return fecha, valores
+
+
 def main():
     headers = {"User-Agent": "Mozilla/5.0 (compatible; AccionRuralBot/1.0)"}
 
@@ -160,6 +231,10 @@ def main():
     chicago_response = requests.get(CHICAGO_URL, headers=headers, timeout=30)
     chicago_response.raise_for_status()
     fecha_chicago, chicago = obtener_chicago(BeautifulSoup(chicago_response.text, "html.parser"))
+
+    mag_response = requests.get(MAG_URL, headers=headers, timeout=30)
+    mag_response.raise_for_status()
+    fecha_mag, mag = obtener_mag(BeautifulSoup(mag_response.text, "html.parser"))
 
     anterior_estado = cargar_json(STATE_FILE)
     anterior = anterior_estado.get("values", {})
@@ -183,6 +258,16 @@ def main():
         "values": {k: v["value"] for k, v in chicago.items()},
         "changes": {k: v["change"] for k, v in chicago.items()},
         "contracts": {k: v["contract"] for k, v in chicago.items()}
+    }
+
+    mag_anterior = datos.get("mag", {}).get("values", {})
+    datos["mag"] = {
+        "source": "Mercado Agroganadero de Cañuelas (MAG)",
+        "url": MAG_URL,
+        "date": fecha_mag,
+        "unit": "$/kg vivo",
+        "values": mag,
+        "changes": calcular_variaciones(mag, mag_anterior)
     }
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as archivo:
