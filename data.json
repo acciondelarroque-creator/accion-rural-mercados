@@ -16,20 +16,20 @@
     "girasol": null,
     "sorgo": 1.56
   },
-  "updated": "2026-09-16T14:11:35.233073+00:00",
+  "updated": "2026-09-16T23:24:00+00:00",
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
-    "date": "15/09/2026",
+    "date": "16/09/2026",
     "values": {
-      "soja": 484.57,
-      "maiz": 210.92,
-      "trigo": 292.58
+      "soja": 485.21,
+      "maiz": 210.33,
+      "trigo": 293.77
     },
     "changes": {
-      "soja": 5.51,
-      "maiz": 0.98,
-      "trigo": 1.29
+      "soja": 1.01,
+      "maiz": -0.69,
+      "trigo": 1.84
     },
     "contracts": {
       "soja": "Nov-26",
