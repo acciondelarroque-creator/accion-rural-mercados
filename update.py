@@ -151,33 +151,6 @@ def obtener_chicago(soup):
     return fecha, referencias
 
 
-
-MAG_URL = "https://www.grupoguarino.com.ar/precios-mag/"
-
-def obtener_mag(soup):
-    texto = soup.get_text(" ", strip=True)
-    fechas = re.findall(r"\d{1,2} de [a-záéíóú]+ de \d{4}", texto, flags=re.I)
-    fecha = None
-    meses = {"enero":1,"febrero":2,"marzo":3,"abril":4,"mayo":5,"junio":6,"julio":7,"agosto":8,"septiembre":9,"octubre":10,"noviembre":11,"diciembre":12}
-    if fechas:
-        m = re.match(r"(\d{1,2}) de ([a-záéíóú]+) de (\d{4})", fechas[0], flags=re.I)
-        if m:
-            fecha = f"{int(m.group(1)):02d}/{meses[normalizar(m.group(2))]:02d}/{m.group(3)}"
-
-    patrones = {
-        "inmag": r"INMAG\s*([\d\.,]+)",
-        "igmag": r"IGMAG\s*([\d\.,]+)",
-        "arrendamiento": r"Índice de Arrendamiento\s*([\d\.,]+)"
-    }
-    valores = {}
-    for clave, patron in patrones.items():
-        m = re.search(patron, texto, flags=re.I)
-        if m:
-            valores[clave] = limpiar_numero(m.group(1))
-    if len(valores) < 2:
-        raise RuntimeError("Guarino no devolvió los índices MAG reconocibles")
-    return fecha, valores
-
 def main():
     headers = {"User-Agent": "Mozilla/5.0 (compatible; AccionRuralBot/1.0)"}
 
@@ -190,8 +163,6 @@ def main():
     fecha_chicago, chicago = obtener_chicago(BeautifulSoup(chicago_response.text, "html.parser"))
 
     ahora_ar = datetime.now(ZoneInfo("America/Argentina/Buenos_Aires"))
-    actualizar_mag = ahora_ar.weekday() in (1, 2, 4)  # martes, miércoles y viernes
-
     anterior_estado = cargar_json(STATE_FILE)
     anterior = anterior_estado.get("values", {})
     fecha_anterior = anterior_estado.get("date")
@@ -216,19 +187,6 @@ def main():
         "contracts": {k: v["contract"] for k, v in chicago.items()}
     }
 
-    if actualizar_mag:
-        mag_response = requests.get("https://www.grupoguarino.com.ar/historicos/", headers=headers, timeout=30)
-        mag_response.raise_for_status()
-        fecha_mag, mag = obtener_mag(BeautifulSoup(mag_response.text, "html.parser"))
-        mag_anterior = datos.get("mag", {}).get("values", {})
-        datos["mag"] = {
-            "source": "Guarino Producciones - Mercado Agroganadero de Cañuelas (MAG)",
-            "url": "https://www.grupoguarino.com.ar/historicos/",
-            "date": fecha_mag,
-            "unit": "$/kg vivo",
-            "values": mag,
-            "changes": calcular_variaciones(mag, mag_anterior)
-        }
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=2)
