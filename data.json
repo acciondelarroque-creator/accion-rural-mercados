@@ -36,19 +36,5 @@
       "maiz": "Dic-26",
       "trigo": "Dic-26"
     }
-  },
-  "mag": {
-    "source": "Mercado Agroganadero de Cañuelas (MAG)",
-    "url": "https://www.grupoguarino.com.ar/precios-mag/",
-    "date": "15/09/2026",
-    "unit": "$/kg vivo",
-    "values": {
-      "inmag": 4155.89,
-      "igmag": 3971.8
-    },
-    "changes": {
-      "inmag": null,
-      "igmag": null
-    }
   }
 }
