@@ -1,22 +1,22 @@
 {
   "source": "Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales",
   "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
-  "date": "18/09/2026",
+  "date": "21/09/2026",
   "values": {
-    "soja": null,
-    "maiz": 295100.0,
-    "trigo": 346250.0,
+    "soja": 560000.0,
+    "maiz": 299000.0,
+    "trigo": 346000.0,
     "girasol": null,
-    "sorgo": 286000.0
+    "sorgo": 285950.0
   },
   "changes": {
     "soja": null,
-    "maiz": 0.31,
-    "trigo": 0.36,
+    "maiz": 1.32,
+    "trigo": -0.07,
     "girasol": null,
-    "sorgo": 0.35
+    "sorgo": -0.02
   },
-  "updated": "2026-09-21T22:55:42.320432+00:00",
+  "updated": "2026-09-22T17:57:14.288152+00:00",
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
