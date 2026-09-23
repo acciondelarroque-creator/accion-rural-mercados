@@ -1,6 +1,6 @@
 {
-  "source": "Granar - Pizarra de Cereales",
-  "url": "https://www.granar.com.ar/",
+  "source": "Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales",
+  "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
   "date": "22/09/2026",
   "values": {
     "soja": 560000.0,
@@ -16,7 +16,7 @@
     "girasol": null,
     "sorgo": 0.0
   },
-  "updated": "2026-09-23T12:09:00-03:00",
+  "updated": "2026-09-23T15:10:56.544495+00:00",
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
