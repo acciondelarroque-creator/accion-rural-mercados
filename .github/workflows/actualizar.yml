@@ -2,11 +2,11 @@ name: Actualizar mercados BCR
 
 on:
   schedule:
-    # Mercados locales: 11:00 de Argentina, lunes a viernes.
-    # Chicago/internacional: 17:00 de Argentina, lunes a viernes.
-    # GitHub Actions usa UTC: 14:00 UTC = 11:00 Argentina y 20:00 UTC = 17:00 Argentina.
-    - cron: "0 14 * * 1-5"
-    - cron: "0 20 * * 1-5"
+    # Comprobación horaria desde las 11:00 hasta las 18:00 de Argentina,
+    # lunes a viernes. Si BCR publica después de las 11:00 o de las 17:00,
+    # el siguiente intento lo detecta automáticamente.
+    # GitHub Actions usa UTC: 14:00-21:00 UTC = 11:00-18:00 Argentina.
+    - cron: "0 14-21 * * 1-5"
   workflow_dispatch:
   push:
     branches:
