@@ -1,45 +1,22 @@
 {
-  "source": "GRANAR · Pizarras de granos",
+  "source": "Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales",
+  "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
   "date": "28/09/2026",
-  "display_date": "29/09/2026",
-  "board_corresponding_date": "28/09/2026",
-  "tc_bna": 1515.5,
   "values": {
-    "soja": 555000,
-    "maiz": 291750,
-    "trigo": 347050,
+    "soja": 555000.0,
+    "maiz": 291750.0,
+    "trigo": 347050.0,
     "girasol": null,
-    "sorgo": null
+    "sorgo": 287950.0
   },
   "changes": {
     "soja": -1.77,
     "maiz": -1.85,
     "trigo": 0.37,
     "girasol": null,
-    "sorgo": null
+    "sorgo": -0.06
   },
-  "day_difference": {
-    "trigo": 1288,
-    "maiz": -5484,
-    "soja": -10000,
-    "sorgo": -185,
-    "girasol": -530
-  },
-  "estimates": {
-    "trigo": null,
-    "maiz": null,
-    "sorgo": 287950,
-    "soja": null,
-    "girasol": 765300
-  },
-  "reference_usd": {
-    "trigo": 229,
-    "maiz": 192.51,
-    "sorgo": 190,
-    "soja": 366.22,
-    "girasol": 504.98
-  },
-  "updated": "2026-09-29T16:34:00-03:00",
+  "updated": "2026-09-29T16:37:05.808282+00:00",
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
