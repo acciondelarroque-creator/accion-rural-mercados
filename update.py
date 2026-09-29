@@ -3,6 +3,7 @@ import os
 import re
 import unicodedata
 from datetime import datetime, timezone
+import time
 from zoneinfo import ZoneInfo
 
 import requests
@@ -31,6 +32,25 @@ def limpiar_numero(valor):
         return float(valor)
     except ValueError:
         return None
+
+
+def url_sin_cache(url):
+    separador = "&" if "?" in url else "?"
+    return f"{url}{separador}accionrural_cache={int(time.time())}"
+
+
+def obtener_con_reintentos(url, headers, intentos=3):
+    ultimo = None
+    for intento in range(1, intentos + 1):
+        try:
+            respuesta = requests.get(url_sin_cache(url), headers=headers, timeout=30)
+            respuesta.raise_for_status()
+            return respuesta
+        except requests.RequestException as exc:
+            ultimo = exc
+            if intento < intentos:
+                time.sleep(4)
+    raise ultimo
 
 
 def cargar_json(path):
@@ -154,11 +174,11 @@ def obtener_chicago(soup):
 def main():
     headers = {"User-Agent": "Mozilla/5.0 (compatible; AccionRuralBot/1.0)"}
 
-    local_response = requests.get(LOCAL_URL, headers=headers, timeout=30)
+    local_response = obtener_con_reintentos(LOCAL_URL, headers)
     local_response.raise_for_status()
     fecha_local, valores = obtener_precios(BeautifulSoup(local_response.text, "html.parser"))
 
-    chicago_response = requests.get(CHICAGO_URL, headers=headers, timeout=30)
+    chicago_response = obtener_con_reintentos(CHICAGO_URL, headers)
     chicago_response.raise_for_status()
     fecha_chicago, chicago = obtener_chicago(BeautifulSoup(chicago_response.text, "html.parser"))
 
@@ -177,7 +197,6 @@ def main():
             "changes": calcular_variaciones(valores, anterior)
         }
 
-    datos["updated"] = datetime.now(timezone.utc).isoformat()
     datos["chicago"] = {
         "source": "BCR - Chicago/Kansas (CME Group)",
         "url": CHICAGO_URL,
@@ -187,6 +206,16 @@ def main():
         "contracts": {k: v["contract"] for k, v in chicago.items()}
     }
 
+
+    anterior_salida = cargar_json(OUTPUT_FILE)
+    datos_sin_fecha_actualizacion = dict(datos)
+    anterior_sin_fecha_actualizacion = dict(anterior_salida)
+    anterior_sin_fecha_actualizacion.pop("updated", None)
+    if datos_sin_fecha_actualizacion == anterior_sin_fecha_actualizacion:
+        datos["updated"] = anterior_salida.get("updated", datetime.now(timezone.utc).isoformat())
+        print("Sin cambios en los datos BCR; no se fuerza un commit.")
+        return
+    datos["updated"] = datetime.now(timezone.utc).isoformat()
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=2)
