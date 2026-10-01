@@ -203,7 +203,10 @@ def main():
     # workflow falla y vuelve a intentarlo en la siguiente ejecución.
     hoy = ahora_ar.date()
     if hoy.weekday() < 5 and ahora_ar.hour >= 11:
-        fecha_minima = hoy
+        # A las 11:00 BCR puede seguir mostrando la última rueda hábil
+        # cerrada (por ejemplo, el miércoles durante el jueves).
+        # Lo que nunca debe ocurrir es quedar dos o más ruedas hábiles atrás.
+        fecha_minima = hoy.replace(day=hoy.day - 1)
         while fecha_minima.weekday() >= 5:
             fecha_minima = fecha_minima.replace(day=fecha_minima.day - 1)
         fecha_local_dt = datetime.strptime(fecha_local, "%d/%m/%Y").date()
