@@ -82,7 +82,7 @@ def obtener_precios(soup):
     for table in soup.find_all("table"):
         texto = normalizar(table.get_text(" ", strip=True))
         if "soja" in texto and "trigo" in texto and "maiz" in texto:
-            candidatos = re.findall(r"\\d{2}/\\d{2}/\\d{4}", table.get_text(" ", strip=True))
+            candidatos = re.findall(r"\d{2}/\d{2}/\d{4}", table.get_text(" ", strip=True))
             if candidatos:
                 tabla = table
                 fechas = sorted(set(candidatos), key=lambda f: datetime.strptime(f, "%d/%m/%Y"), reverse=True)
@@ -95,7 +95,7 @@ def obtener_precios(soup):
     for fila in tabla.find_all("tr"):
         textos = [c.get_text(" ", strip=True) for c in fila.find_all(["th", "td"])]
         for i, texto in enumerate(textos):
-            if re.fullmatch(r"\\d{2}/\\d{2}/\\d{4}", texto) and texto == fecha:
+            if re.fullmatch(r"\d{2}/\d{2}/\d{4}", texto) and texto == fecha:
                 fila_fechas, indice_fecha = textos, i
                 break
         if indice_fecha is not None:
