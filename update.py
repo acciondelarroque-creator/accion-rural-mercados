@@ -75,34 +75,47 @@ def calcular_variaciones(actual, anterior):
 
 
 def obtener_precios(soup):
+    # La página de BCR contiene una tabla histórica con varias fechas.
+    # Identificamos la columna más reciente en vez de asumir una posición fija.
     tabla = None
+    fechas = []
     for table in soup.find_all("table"):
         texto = normalizar(table.get_text(" ", strip=True))
         if "soja" in texto and "trigo" in texto and "maiz" in texto:
-            tabla = table
+            candidatos = re.findall(r"\\d{2}/\\d{2}/\\d{4}", table.get_text(" ", strip=True))
+            if candidatos:
+                tabla = table
+                fechas = sorted(set(candidatos), key=lambda f: datetime.strptime(f, "%d/%m/%Y"), reverse=True)
+                break
+    if tabla is None or not fechas:
+        raise RuntimeError("No se encontró en BCR la tabla histórica de precios de pizarra")
+    fecha = fechas[0]
+    fila_fechas = None
+    indice_fecha = None
+    for fila in tabla.find_all("tr"):
+        textos = [c.get_text(" ", strip=True) for c in fila.find_all(["th", "td"])]
+        for i, texto in enumerate(textos):
+            if re.fullmatch(r"\\d{2}/\\d{2}/\\d{4}", texto) and texto == fecha:
+                fila_fechas, indice_fecha = textos, i
+                break
+        if indice_fecha is not None:
             break
-    if tabla is None:
-        raise RuntimeError("No se encontró la tabla de cotizaciones de la BCR")
-
-    fechas = re.findall(r"\d{2}/\d{2}/\d{4}", tabla.get_text(" ", strip=True))
-    fecha = max(fechas, key=lambda f: datetime.strptime(f, "%d/%m/%Y")) if fechas else None
-
-    nombres = {"soja": "soja", "sorgo": "sorgo", "girasol": "girasol", "trigo": "trigo", "maiz": "maiz"}
+    if indice_fecha is None:
+        raise RuntimeError("No se pudo identificar la columna de la fecha más reciente de BCR")
+    nombres = {"soja":"soja", "sorgo":"sorgo", "girasol":"girasol", "trigo":"trigo", "maiz":"maiz"}
     valores = {}
     for fila in tabla.find_all("tr"):
         textos = [c.get_text(" ", strip=True) for c in fila.find_all(["th", "td"])]
-        if len(textos) < 3:
+        if len(textos) <= indice_fecha:
             continue
         producto = normalizar(textos[0])
         clave = next((v for k, v in nombres.items() if producto == k or producto.startswith(k + " ")), None)
         if clave:
-            valores[clave] = limpiar_numero(textos[2])
-
+            valores[clave] = limpiar_numero(textos[indice_fecha])
     requeridos = ["soja", "maiz", "trigo", "girasol", "sorgo"]
     if not any(valores.get(k) is not None for k in requeridos):
-        raise RuntimeError("La BCR no devolvió precios reconocibles")
+        raise RuntimeError("La BCR no devolvió precios reconocibles para la fecha " + fecha)
     return fecha, {k: valores.get(k) for k in requeridos}
-
 
 def obtener_chicago(soup):
     tabla = None
@@ -183,6 +196,24 @@ def main():
     fecha_chicago, chicago = obtener_chicago(BeautifulSoup(chicago_response.text, "html.parser"))
 
     ahora_ar = datetime.now(ZoneInfo("America/Argentina/Buenos_Aires"))
+
+    # Protección permanente contra datos atrasados.
+    # Después de las 11:00, de lunes a viernes, la pizarra no puede quedar
+    # por debajo del último día hábil esperado. Si BCR aún no publicó, el
+    # workflow falla y vuelve a intentarlo en la siguiente ejecución.
+    hoy = ahora_ar.date()
+    if hoy.weekday() < 5 and ahora_ar.hour >= 11:
+        fecha_minima = hoy
+        while fecha_minima.weekday() >= 5:
+            fecha_minima = fecha_minima.replace(day=fecha_minima.day - 1)
+        fecha_local_dt = datetime.strptime(fecha_local, "%d/%m/%Y").date()
+        if fecha_local_dt < fecha_minima:
+            raise RuntimeError(
+                f"BCR está devolviendo una pizarra atrasada: {fecha_local}. "
+                f"Se esperaba como mínimo {fecha_minima.strftime('%d/%m/%Y')}. "
+                "No se publica el dato atrasado; se reintentará en la próxima ejecución."
+            )
+
     anterior_estado = cargar_json(STATE_FILE)
     anterior = anterior_estado.get("values", {})
     fecha_anterior = anterior_estado.get("date")
