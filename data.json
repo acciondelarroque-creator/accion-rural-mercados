@@ -3,9 +3,9 @@
   "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
   "date": "02/10/2026",
   "values": {
-    "soja": 554000.0,
-    "maiz": 287090.0,
-    "trigo": 339975.0,
+    "soja": 554000,
+    "maiz": 287090,
+    "trigo": 339975,
     "girasol": null,
     "sorgo": null
   },
@@ -36,5 +36,23 @@
       "trigo": "Dic-26"
     }
   },
-  "updated": "2026-10-05T21:26:47.597385+00:00"
+  "updated": "2026-10-05T21:26:47.597385+00:00",
+  "mercado_fisico": {
+    "source": "Bolsa de Comercio de Rosario - Mercado Físico de Rosario",
+    "date": "05/10/2026",
+    "values": {
+      "soja": null,
+      "maiz": 190000,
+      "trigo": 225000,
+      "girasol": 500,
+      "sorgo": 190000
+    },
+    "currency": {
+      "soja": "ARS/tn",
+      "maiz": "US$/tn",
+      "trigo": "US$/tn",
+      "girasol": "US$/tn",
+      "sorgo": "US$/tn"
+    }
+  }
 }
