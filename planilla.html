@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planilla de Granos | Acción Rural</title>
+<style>
+:root{--verde:#17643a;--verde2:#e8f2eb;--oro:#b58a3a;--tinta:#202923;--muted:#66716a;--linea:#dce3dd;--fondo:#f4f6f3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--tinta);font-family:Arial,Helvetica,sans-serif}
+main{max-width:1050px;margin:28px auto;padding:0 16px 36px}
+.masthead{background:#173f2b;color:white;padding:22px 24px;border-radius:12px 12px 0 0;border-bottom:5px solid var(--oro)}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#d9c18e;font-weight:700}
+h1{font-size:clamp(24px,4vw,34px);margin:7px 0 4px}
+.sub{margin:0;color:#e1e9e3;font-size:14px}
+.panel{background:#fff;padding:20px 22px;border:1px solid var(--linea);border-top:0;border-radius:0 0 12px 12px;box-shadow:0 8px 25px #152e1b0c}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.stamp{font-size:13px;color:var(--muted);line-height:1.5}
+.stamp strong{color:var(--tinta)}
+button{border:1px solid #c7d2c9;background:#fff;border-radius:7px;padding:9px 13px;font-weight:700;color:var(--verde);cursor:pointer}
+button:hover{background:var(--verde2)}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h2{font-size:18px;margin:0}
+.tag{font-size:11px;background:var(--verde2);color:var(--verde);padding:5px 8px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.tag.blue{background:#e9f0f6;color:#275878}
+.table-wrap{width:100%;overflow-x:auto;border:1px solid var(--linea);border-radius:8px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{background:#f0f3ef;color:#465349;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:12px 14px;border-bottom:1px solid var(--linea)}
+td{padding:14px;border-bottom:1px solid #e9eeea;font-size:14px}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:nth-child(even){background:#fbfcfb}
+td:first-child{font-weight:700}
+.price{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.variation{font-weight:700;font-size:12px;white-space:nowrap}
+.up{color:#167244}.down{color:#b42318}.flat{color:#68736b}.sc{color:#8b948e;font-weight:500}
+.note{font-size:12px;color:var(--muted);line-height:1.5;margin:12px 2px 0}
+.source{margin-top:22px;padding-top:14px;border-top:1px solid var(--linea);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+a{color:var(--verde);font-weight:700}
+.status{font-size:12px;color:var(--muted)}
+.error{padding:12px;background:#fff2f0;color:#a1261c;border-radius:6px;margin:10px 0;display:none}
+@media(max-width:600px){main{margin:12px auto;padding:0 10px 24px}.masthead{padding:18px 16px}.panel{padding:16px 12px}.toolbar{align-items:flex-start}td{padding:12px 10px}th{padding:10px}}
+@media print{body{background:#fff}main{margin:0;max-width:none;padding:0}.masthead{border-radius:0;print-color-adjust:exact}.panel{box-shadow:none;border:1px solid #ccc}.toolbar button{display:none}.table-wrap{overflow:visible}table{min-width:0}.source a{color:#000}}
+</style>
+</head>
+<body>
+<main>
+<header class="masthead">
+  <div class="kicker">Acción Rural · Mercados</div>
+  <h1>Mercado de Granos</h1>
+  <p class="sub">Planilla de cotizaciones · Valores publicados por la Bolsa de Comercio de Rosario</p>
+</header>
+<section class="panel">
+  <div class="toolbar">
+    <div class="stamp">Fecha de pizarra: <strong id="fecha">Cargando…</strong><br>Última actualización del archivo: <span id="actualizado">—</span></div>
+    <button type="button" onclick="loadData()">↻ Actualizar datos</button>
+  </div>
+  <div id="error" class="error">No se pudieron cargar los datos. Intentá actualizar nuevamente.</div>
+  <div class="section-title"><h2>Mercado local</h2><span class="tag">Pizarra BCR</span></div>
+  <div class="table-wrap">
+    <table aria-label="Cotizaciones locales de granos">
+      <thead><tr><th>Producto</th><th>Precio ($/tonelada)</th><th>Variación</th></tr></thead>
+      <tbody id="local"><tr><td colspan="3">Cargando cotizaciones…</td></tr></tbody>
+    </table>
+  </div>
+  <p class="note">Los valores se muestran tal como figuran en el archivo de cotizaciones. “S/C” indica que no hay cotización disponible para ese producto.</p>
+  <div class="section-title"><h2>Mercados internacionales</h2><span class="tag blue">Chicago / CME</span></div>
+  <div class="table-wrap">
+    <table aria-label="Cotizaciones internacionales de granos">
+      <thead><tr><th>Producto</th><th>Contrato</th><th>Precio (US$/tonelada)</th><th>Variación</th></tr></thead>
+      <tbody id="chicago"><tr><td colspan="4">Cargando cotizaciones…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="source">
+    <div>Fuente local: <a href="https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0" target="_blank" rel="noopener">Bolsa de Comercio de Rosario</a></div>
+    <div>Internacionales: <a href="https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1" target="_blank" rel="noopener">BCR · Chicago/Kansas</a></div>
+    <div class="status" id="estado">Consultando datos…</div>
+  </div>
+</section>
+</main>
+<script>
+const DATA_URL='data.json';
+const fmt=(n,d=0)=>n==null?'S/C':new Intl.NumberFormat('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
+const pct=n=>n==null?'<span class="sc">—</span>':'<span class="variation '+(n>0?'up':n<0?'down':'flat')+'">'+(n>0?'▲ ':n<0?'▼ ':'= ')+fmt(Math.abs(n),2)+'%</span>';
+async function loadData(){
+ const error=document.getElementById('error');
+ try{
+  const r=await fetch(DATA_URL+'?t='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  document.getElementById('fecha').textContent=d.date||'Sin fecha';
+  const stamp=d.updated?new Date(d.updated).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'}):'No informado';
+  document.getElementById('actualizado').textContent=stamp;
+  const products=[['Soja','soja'],['Maíz','maiz'],['Trigo','trigo'],['Girasol','girasol'],['Sorgo','sorgo']];
+  document.getElementById('local').innerHTML=products.map(([label,key])=>'<tr><td>'+label+'</td><td class="price">'+(d.values?.[key]==null?'<span class="sc">S/C</span>':'$ '+fmt(d.values[key]))+'</td><td>'+pct(d.changes?.[key])+'</td></tr>').join('');
+  const intl=[['Soja','soja'],['Maíz','maiz'],['Trigo','trigo']];
+  const c=d.chicago||{};
+  document.getElementById('chicago').innerHTML=intl.map(([label,key])=>'<tr><td>'+label+'</td><td>'+(c.contracts?.[key]||'—')+'</td><td class="price">'+(c.values?.[key]==null?'<span class="sc">S/C</span>':'US$ '+fmt(c.values[key],2))+'</td><td>'+pct(c.changes?.[key])+'</td></tr>').join('');
+  document.getElementById('estado').textContent='Datos cargados correctamente';
+  error.style.display='none';
+ }catch(e){error.style.display='block';document.getElementById('estado').textContent='Error al cargar los datos';console.error(e)}
+}
+loadData();
+setInterval(loadData,1800000);
+</script>
+</body>
+</html>
