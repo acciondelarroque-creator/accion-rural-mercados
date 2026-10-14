@@ -19,16 +19,16 @@
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
-    "date": "13/10/2026",
+    "date": "14/10/2026",
     "values": {
-      "soja": 471.71,
-      "maiz": 190.05,
-      "trigo": 261.71
+      "soja": 469.32,
+      "maiz": 189.26,
+      "trigo": 262.72
     },
     "changes": {
-      "soja": -1.84,
-      "maiz": -0.1,
-      "trigo": -1.38
+      "soja": -2.3,
+      "maiz": -0.69,
+      "trigo": 1.29
     },
     "contracts": {
       "soja": "Nov-26",
@@ -36,7 +36,7 @@
       "trigo": "Dic-26"
     }
   },
-  "updated": "2026-10-14T18:28:53.723137+00:00",
+  "updated": "2026-10-14T20:13:18.449911+00:00",
   "estimativos": {
     "sorgo": 293200
   },
