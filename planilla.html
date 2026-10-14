@@ -40,6 +40,10 @@ a{color:var(--verde);font-weight:700}
 .error{padding:12px;background:#fff2f0;color:#a1261c;border-radius:6px;margin:10px 0;display:none}
 @media(max-width:600px){main{margin:12px auto;padding:0 10px 24px}.masthead{padding:18px 16px}.panel{padding:16px 12px}.toolbar{align-items:flex-start}td{padding:12px 10px}th{padding:10px}}
 @media print{body{background:#fff}main{margin:0;max-width:none;padding:0}.masthead{border-radius:0;print-color-adjust:exact}.panel{box-shadow:none;border:1px solid #ccc}.toolbar button{display:none}.table-wrap{overflow:visible}table{min-width:0}.source a{color:#000}}
+.sponsor-banner{display:block;margin:0 0 16px;border-radius:10px;overflow:hidden;line-height:0;border:1px solid var(--linea);background:#fff}
+.sponsor-banner img{display:block;width:100%;height:auto}
+.sponsor-banner:focus-visible{outline:3px solid var(--oro);outline-offset:3px}
+@media print{.sponsor-banner{break-inside:avoid}}
 </style>
 </head>
 <body>
@@ -49,6 +53,10 @@ a{color:var(--verde);font-weight:700}
   <h1>Mercado de Granos</h1>
   <p class="sub">Planilla de cotizaciones · Valores publicados por la Bolsa de Comercio de Rosario</p>
 </header>
+<!-- Auspicio Granar: al hacer clic abre WhatsApp -->
+<a class="sponsor-banner" href="https://wa.me/5493446476198" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp a Joaquín Benedetti, agente Granar en Entre Ríos">
+  <img src="https://accionrural.com.ar/download/multimedia.grande.97f1e4460b41e770.Z3JhbmRlLndlYnA%3D.webp" alt="Auspicio Granar — Joaquín Benedetti, Agente Granar en Entre Ríos. WhatsApp 54 9 3446 47-6198">
+</a>
 <section class="panel">
   <div class="toolbar">
     <div class="stamp">Fecha de pizarra: <strong id="fecha">Cargando…</strong><br>Última actualización del archivo: <span id="actualizado">—</span></div>
