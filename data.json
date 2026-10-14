@@ -11,10 +11,10 @@
   },
   "changes": {
     "soja": 0,
-    "maiz": -5000,
-    "trigo": 3805,
-    "girasol": -2385,
-    "sorgo": -2360
+    "maiz": -1.71,
+    "trigo": 1.11,
+    "girasol": -0.3,
+    "sorgo": -0.8
   },
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
