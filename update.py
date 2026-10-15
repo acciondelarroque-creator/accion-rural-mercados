@@ -197,39 +197,52 @@ def main():
 
     ahora_ar = datetime.now(ZoneInfo("America/Argentina/Buenos_Aires"))
 
-    # Protección permanente contra datos atrasados.
-    # Después de las 11:00, de lunes a viernes, la pizarra no puede quedar
-    # por debajo del último día hábil esperado. Si BCR aún no publicó, el
-    # workflow falla y vuelve a intentarlo en la siguiente ejecución.
-    hoy = ahora_ar.date()
-    if hoy.weekday() < 5 and ahora_ar.hour >= 11:
-        # A las 11:00 BCR puede seguir mostrando la última rueda hábil
-        # cerrada (por ejemplo, el miércoles durante el jueves).
-        # Lo que nunca debe ocurrir es quedar dos o más ruedas hábiles atrás.
-        fecha_minima = hoy.replace(day=hoy.day - 1)
-        while fecha_minima.weekday() >= 5:
-            fecha_minima = fecha_minima.replace(day=fecha_minima.day - 1)
-        fecha_local_dt = datetime.strptime(fecha_local, "%d/%m/%Y").date()
-        if fecha_local_dt < fecha_minima:
-            raise RuntimeError(
-                f"BCR está devolviendo una pizarra atrasada: {fecha_local}. "
-                f"Se esperaba como mínimo {fecha_minima.strftime('%d/%m/%Y')}. "
-                "No se publica el dato atrasado; se reintentará en la próxima ejecución."
-            )
-
+    # Cargar el estado guardado antes de validar fechas. Si BCR todavía no
+    # publicó una pizarra nueva, el workflow no debe fallar ni retroceder
+    # los precios locales; Chicago puede actualizarse de forma independiente.
     anterior_estado = cargar_json(STATE_FILE)
     anterior = anterior_estado.get("values", {})
     fecha_anterior = anterior_estado.get("date")
+    datos = cargar_json(OUTPUT_FILE)
+    fecha_guardada = datos.get("date")
+    fecha_local_dt = datetime.strptime(fecha_local, "%d/%m/%Y").date()
 
-    datos = cargar_json(OUTPUT_FILE) if fecha_local and fecha_local == fecha_anterior else {}
+    if fecha_guardada:
+        fecha_guardada_dt = datetime.strptime(fecha_guardada, "%d/%m/%Y").date()
+        if fecha_local_dt < fecha_guardada_dt:
+            print(
+                f"BCR devuelve una pizarra anterior ({fecha_local}); "
+                f"se conserva la última fecha guardada ({fecha_guardada})."
+            )
+            fecha_local = fecha_guardada
+            valores = datos.get("values", anterior)
+            fecha_local_dt = fecha_guardada_dt
+
+    hoy = ahora_ar.date()
+    if hoy.weekday() < 5 and ahora_ar.hour >= 11:
+        fecha_minima = hoy.replace(day=hoy.day - 1)
+        while fecha_minima.weekday() >= 5:
+            fecha_minima = fecha_minima.replace(day=fecha_minima.day - 1)
+        if fecha_local_dt < fecha_minima:
+            print(
+                f"BCR todavía no publica una pizarra para {fecha_minima.strftime('%d/%m/%Y')}; "
+                f"se conserva la última disponible ({fecha_local}) y continúa la actualización internacional."
+            )
+
     if not datos:
-        datos = {
+        datos = {}
+    if not datos.get("date") or fecha_local_dt >= datetime.strptime(datos["date"], "%d/%m/%Y").date():
+        if fecha_local != fecha_anterior:
+            cambios_locales = calcular_variaciones(valores, anterior)
+        else:
+            cambios_locales = datos.get("changes", calcular_variaciones(valores, anterior))
+        datos.update({
             "source": "Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales",
             "url": LOCAL_URL,
             "date": fecha_local,
             "values": valores,
-            "changes": calcular_variaciones(valores, anterior)
-        }
+            "changes": cambios_locales
+        })
 
     datos["chicago"] = {
         "source": "BCR - Chicago/Kansas (CME Group)",
