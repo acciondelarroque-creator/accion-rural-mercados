@@ -1,1 +1,57 @@
-{"source":"Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales","url":"https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0","date":"16/10/2026","values":{"soja":552000,"maiz":285000,"trigo":353000,"girasol":null,"sorgo":286710},"changes":{"soja":-1.43,"maiz":-0.52,"trigo":0.73,"girasol":null,"sorgo":null},"chicago":{"source":"BCR - Chicago/Kansas (CME Group)","url":"https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1","date":"16/10/2026","values":{"soja":463.44,"maiz":186.71,"trigo":258.68},"changes":{"soja":-0.92,"maiz":-1.48,"trigo":-3.4},"contracts":{"soja":"Nov-26","maiz":"Dic-26","trigo":"Dic-26"}},"updated":"2026-10-19T14:04:26+00:00","estimativos":{"sorgo":293200,"date":"13/10/2026"},"localDetails":{"tc_bna":1503.5,"usd":{"trigo":230,"maiz":191.22,"sorgo":195.01,"soja":372.46,"girasol":530},"source":"BCR - Cámara Arbitral de Cereales","published":"14/10/2026 10:12","date":"13/10/2026"}}
+{
+  "source": "Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales",
+  "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
+  "date": "16/10/2026",
+  "values": {
+    "soja": 552000.0,
+    "maiz": 285000.0,
+    "trigo": 353000.0,
+    "girasol": null,
+    "sorgo": 286710.0
+  },
+  "changes": {
+    "soja": -1.43,
+    "maiz": -0.52,
+    "trigo": 0.73,
+    "girasol": null,
+    "sorgo": null
+  },
+  "chicago": {
+    "source": "BCR - Chicago/Kansas (CME Group)",
+    "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
+    "date": "16/10/2026",
+    "values": {
+      "soja": 463.44,
+      "maiz": 186.71,
+      "trigo": 258.68
+    },
+    "changes": {
+      "soja": -0.92,
+      "maiz": -1.48,
+      "trigo": -3.4
+    },
+    "contracts": {
+      "soja": "Nov-26",
+      "maiz": "Dic-26",
+      "trigo": "Dic-26"
+    }
+  },
+  "updated": "2026-10-19T14:05:59.335824+00:00",
+  "estimativos": {
+    "sorgo": 293200,
+    "date": "13/10/2026"
+  },
+  "localDetails": {
+    "tc_bna": 1503.5,
+    "usd": {
+      "trigo": 230,
+      "maiz": 191.22,
+      "sorgo": 195.01,
+      "soja": 372.46,
+      "girasol": 530
+    },
+    "source": "BCR - Cámara Arbitral de Cereales",
+    "published": "14/10/2026 10:12",
+    "date": "13/10/2026"
+  }
+}
