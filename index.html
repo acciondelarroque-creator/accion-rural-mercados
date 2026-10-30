@@ -47,7 +47,115 @@ function variation(d){
   if(d==null)return '';
   return '<span class="'+(d>0?'up':d<0?'down':'flat')+'">'+(d>0?'▲':d<0?'▼':'=')+' '+Math.abs(d).toFixed(2)+'%</span>';
 }
-function localItem(l,v,d){return '<span class="ticker-item"><b>'+l+'</b> $'+fmt(v)+'/tn '+variation(d)+'</span>'}
+function localVariation(d){if(d==null)return '';return '<span class="'+(d>0?'up':d<0?'down':'flat')+'">'+(d>0?'▲':d<0?'▼':'=')+' 
+function chicagoItem(l,v,d){return '<span class="ticker-item"><b>'+l+'</b> US$ '+fmt(v,2)+'/tn '+variation(d)+'</span>'}
+function mover(d){
+  const max=track.scrollWidth-track.clientWidth;
+  const paso=Math.max(220,track.clientWidth*.65);
+  track.scrollTo({left:Math.max(0,Math.min(max,track.scrollLeft+d*paso)),behavior:'smooth'});
+}
+left.onclick=()=>mover(-1);right.onclick=()=>mover(1);
+
+let down=false,sx=0,ss=0;
+track.addEventListener('pointerdown',e=>{
+  down=true;sx=e.clientX;ss=track.scrollLeft;track.classList.add('dragging');
+  try{track.setPointerCapture(e.pointerId)}catch(_){}
+});
+track.addEventListener('pointermove',e=>{
+  if(!down)return;
+  track.scrollLeft=ss-(e.clientX-sx);
+  e.preventDefault();
+});
+track.addEventListener('pointerup',e=>{
+  down=false;track.classList.remove('dragging');
+  try{track.releasePointerCapture(e.pointerId)}catch(_){}
+});
+track.addEventListener('pointercancel',()=>{down=false;track.classList.remove('dragging')});
+
+async function load(){
+  try{
+    const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw Error(r.status);
+    const d=await r.json();
+    let html='<span class="ticker-item"><span class="ticker-label pizarra">Pizarra '+fmtDate(d.date)+'</span></span>';
+    html+=localItem('Soja',d.values?.soja,d.daily_differences?.soja);
+    html+=localItem('Maíz',d.values?.maiz,d.daily_differences?.maiz);
+    html+=localItem('Trigo',d.values?.trigo,d.daily_differences?.trigo);
+    html+=localItem('Girasol',d.values?.girasol,d.daily_differences?.girasol);
+    html+=localItem('Sorgo',d.values?.sorgo,d.daily_differences?.sorgo);
+    if(d.chicago?.date){
+      html+='<span class="ticker-item"><span class="ticker-label chicago">Chicago cierre '+fmtDate(d.chicago.date)+'</span></span>';
+      html+=chicagoItem('Soja',d.chicago.values?.soja,d.chicago.changes?.soja);
+      html+=chicagoItem('Maíz',d.chicago.values?.maiz,d.chicago.changes?.maiz);
+      html+=chicagoItem('Trigo',d.chicago.values?.trigo,d.chicago.changes?.trigo);
+    }
+    html+='<span class="ticker-source-item">Fuente: BCR / CME Group</span>';
+    track.innerHTML=html;
+    track.scrollLeft=0;
+  }catch(e){
+    console.error('Mercado de Granos',e);
+    track.innerHTML='<span class="ticker-item"><b>Mercado de Granos: datos no disponibles</b></span>';
+  }
+}
+load();
+setInterval(load,1800000);
+</script>
+</body>
+</html>+fmt(Math.abs(d))+'</span>'}\nfunction localItem(l,v,d){return '<span class="ticker-item"><b>'+l+'</b> 
+function chicagoItem(l,v,d){return '<span class="ticker-item"><b>'+l+'</b> US$ '+fmt(v,2)+'/tn '+variation(d)+'</span>'}
+function mover(d){
+  const max=track.scrollWidth-track.clientWidth;
+  const paso=Math.max(220,track.clientWidth*.65);
+  track.scrollTo({left:Math.max(0,Math.min(max,track.scrollLeft+d*paso)),behavior:'smooth'});
+}
+left.onclick=()=>mover(-1);right.onclick=()=>mover(1);
+
+let down=false,sx=0,ss=0;
+track.addEventListener('pointerdown',e=>{
+  down=true;sx=e.clientX;ss=track.scrollLeft;track.classList.add('dragging');
+  try{track.setPointerCapture(e.pointerId)}catch(_){}
+});
+track.addEventListener('pointermove',e=>{
+  if(!down)return;
+  track.scrollLeft=ss-(e.clientX-sx);
+  e.preventDefault();
+});
+track.addEventListener('pointerup',e=>{
+  down=false;track.classList.remove('dragging');
+  try{track.releasePointerCapture(e.pointerId)}catch(_){}
+});
+track.addEventListener('pointercancel',()=>{down=false;track.classList.remove('dragging')});
+
+async function load(){
+  try{
+    const r=await fetch(BCR_URL+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw Error(r.status);
+    const d=await r.json();
+    let html='<span class="ticker-item"><span class="ticker-label pizarra">Pizarra '+fmtDate(d.date)+'</span></span>';
+    html+=localItem('Soja',d.values?.soja,d.changes?.soja);
+    html+=localItem('Maíz',d.values?.maiz,d.changes?.maiz);
+    html+=localItem('Trigo',d.values?.trigo,d.changes?.trigo);
+    html+=localItem('Girasol',d.values?.girasol,d.changes?.girasol);
+    html+=localItem('Sorgo',d.values?.sorgo,d.changes?.sorgo);
+    if(d.chicago?.date){
+      html+='<span class="ticker-item"><span class="ticker-label chicago">Chicago cierre '+fmtDate(d.chicago.date)+'</span></span>';
+      html+=chicagoItem('Soja',d.chicago.values?.soja,d.chicago.changes?.soja);
+      html+=chicagoItem('Maíz',d.chicago.values?.maiz,d.chicago.changes?.maiz);
+      html+=chicagoItem('Trigo',d.chicago.values?.trigo,d.chicago.changes?.trigo);
+    }
+    html+='<span class="ticker-source-item">Fuente: BCR / CME Group</span>';
+    track.innerHTML=html;
+    track.scrollLeft=0;
+  }catch(e){
+    console.error('Mercado de Granos',e);
+    track.innerHTML='<span class="ticker-item"><b>Mercado de Granos: datos no disponibles</b></span>';
+  }
+}
+load();
+setInterval(load,1800000);
+</script>
+</body>
+</html>+fmt(v)+'/tn '+localVariation(d)+'</span>'}
 function chicagoItem(l,v,d){return '<span class="ticker-item"><b>'+l+'</b> US$ '+fmt(v,2)+'/tn '+variation(d)+'</span>'}
 function mover(d){
   const max=track.scrollWidth-track.clientWidth;
