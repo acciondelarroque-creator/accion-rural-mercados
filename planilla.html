@@ -86,7 +86,8 @@ a{color:var(--verde);font-weight:700}
 <script>
 const DATA_URL='https://raw.githubusercontent.com/acciondelarroque-creator/accion-rural-mercados/main/data.json';
 const fmt=(n,d=0)=>n==null?'S/C':new Intl.NumberFormat('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
-const pct=n=>n==null?'<span class="sc">—</span>':'<span class="variation '+(n>0?'up':n<0?'down':'flat')+'">'+(n>0?'▲ ':n<0?'▼ ':'= ')+fmt(Math.abs(n),2)+'%</span>';\nconst pesos=n=>n==null?'<span class="sc">—</span>':'<span class="variation '+(n>0?'up':n<0?'down':'flat')+'">'+(n>0?'▲ ':n<0?'▼ ':'= ')+'$ '+fmt(Math.abs(n))+'</span>';
+const pct=n=>n==null?'<span class="sc">—</span>':'<span class="variation '+(n>0?'up':n<0?'down':'flat')+'">'+(n>0?'▲ ':n<0?'▼ ':'= ')+fmt(Math.abs(n),2)+'%</span>';
+const pesos=n=>n==null?'<span class="sc">—</span>':'<span class="variation '+(n>0?'up':n<0?'down':'flat')+'">'+(n>0?'▲ ':n<0?'▼ ':'= ')+'$ '+fmt(Math.abs(n))+'</span>';
 async function loadData(){
  const error=document.getElementById('error');
  try{
