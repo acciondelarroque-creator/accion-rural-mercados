@@ -3,11 +3,11 @@
   "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
   "date": "29/10/2026",
   "values": {
+    "trigo": 311000,
+    "maiz": 275400,
+    "sorgo": null,
     "soja": null,
-    "maiz": 275400.0,
-    "trigo": 311000.0,
-    "girasol": null,
-    "sorgo": null
+    "girasol": null
   },
   "changes": {
     "soja": null,
@@ -36,25 +36,34 @@
       "trigo": "Dic-26"
     }
   },
-  "updated": "2026-10-30T19:00:37.025766+00:00",
+  "updated": "2026-10-30T19:01:03.116Z",
   "estimativos": {
+    "trigo": null,
+    "maiz": null,
+    "sorgo": 285000,
     "soja": 547000,
     "girasol": 810900,
-    "sorgo": 285000,
-    "date": "29/10/2026",
-    "note": "Valores estimados publicados por BCR; no son cotizaciones pizarra firmes."
+    "date": "29/10/2026"
   },
   "localDetails": {
     "tc_bna": 1530,
     "usd": {
       "trigo": 203.27,
       "maiz": 180,
-      "soja": 357.52,
       "sorgo": 186.27,
+      "soja": 357.52,
       "girasol": 530
     },
     "source": "BCR - Cámara Arbitral de Cereales",
-    "published": "30/10/2026 10:30",
+    "published": "30/10/2026",
     "date": "29/10/2026"
+  },
+  "display_date": "30/10/2026",
+  "daily_differences": {
+    "trigo": -6300,
+    "maiz": -2400,
+    "sorgo": -900,
+    "soja": -3000,
+    "girasol": -1590
   }
 }
