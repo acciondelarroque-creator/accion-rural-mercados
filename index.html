@@ -106,7 +106,7 @@ async function loadMarketData() {
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const data = await response.json();
 
-    const displayDate = data.display_date || data.date;
+    const displayDate = data.date || data.display_date;
     const localChanges = data.changes || {};
     let html = '<span class="ticker-item"><span class="ticker-label pizarra">Pizarra ' +
       fmtDate(displayDate) + '</span></span>';
