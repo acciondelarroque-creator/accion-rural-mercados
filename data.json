@@ -1,34 +1,34 @@
 {
   "source": "Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales",
   "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
-  "date": "29/10/2026",
+  "date": "02/11/2026",
   "values": {
-    "soja": null,
-    "maiz": 275400.0,
-    "trigo": 311000.0,
+    "soja": 542000.0,
+    "maiz": 275000.0,
+    "trigo": 314980.0,
     "girasol": null,
     "sorgo": null
   },
   "changes": {
     "soja": null,
-    "maiz": -0.86,
-    "trigo": -1.99,
+    "maiz": -0.15,
+    "trigo": 1.28,
     "girasol": null,
     "sorgo": null
   },
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
-    "date": "30/10/2026",
+    "date": "02/11/2026",
     "values": {
-      "soja": 449.11,
-      "maiz": 176.27,
-      "trigo": 236.73
+      "soja": 442.68,
+      "maiz": 176.47,
+      "trigo": 237.37
     },
     "changes": {
-      "soja": 0.64,
-      "maiz": -1.48,
-      "trigo": -0.64
+      "soja": -6.52,
+      "maiz": 0.0,
+      "trigo": 0.64
     },
     "contracts": {
       "soja": "Nov-26",
@@ -36,7 +36,7 @@
       "trigo": "Dic-26"
     }
   },
-  "updated": "2026-10-30T23:35:43.435277+00:00",
+  "updated": "2026-11-03T13:39:17.945547+00:00",
   "estimativos": {
     "trigo": null,
     "maiz": null,
