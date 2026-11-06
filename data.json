@@ -1,18 +1,18 @@
 {
   "source": "Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales",
   "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
-  "date": "04/11/2026",
+  "date": "05/11/2026",
   "values": {
-    "soja": 540000.0,
-    "maiz": 275500.0,
-    "trigo": 315100.0,
+    "soja": 535000.0,
+    "maiz": 275000.0,
+    "trigo": 316519.0,
     "girasol": null,
     "sorgo": null
   },
   "changes": {
-    "soja": -0.09,
-    "maiz": 0.94,
-    "trigo": -0.28,
+    "soja": -0.93,
+    "maiz": -0.18,
+    "trigo": 0.45,
     "girasol": null,
     "sorgo": null
   },
@@ -36,7 +36,7 @@
       "trigo": "Dic-26"
     }
   },
-  "updated": "2026-11-06T01:29:28.970755+00:00",
+  "updated": "2026-11-06T20:20:37.023808+00:00",
   "estimativos": {
     "trigo": null,
     "maiz": null,
