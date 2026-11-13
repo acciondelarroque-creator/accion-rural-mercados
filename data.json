@@ -40,9 +40,9 @@
   "estimativos": {
     "trigo": null,
     "maiz": null,
-    "sorgo": 276570,
+    "sorgo": null,
     "soja": null,
-    "girasol": 752885,
+    "girasol": null,
     "date": "12/11/2026"
   },
   "localDetails": {
@@ -50,9 +50,9 @@
     "usd": {
       "trigo": 188.02,
       "maiz": 179.5,
-      "sorgo": 180,
+      "sorgo": null,
       "soja": 351.45,
-      "girasol": 490
+      "girasol": null
     },
     "source": "BCR - Cámara Arbitral de Cereales",
     "published": "13/11/2026",
@@ -62,8 +62,8 @@
   "daily_differences": {
     "trigo": -10600,
     "maiz": 800,
-    "sorgo": 270,
+    "sorgo": null,
     "soja": -5000,
-    "girasol": -7115
+    "girasol": null
   }
 }
