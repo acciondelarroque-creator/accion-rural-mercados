@@ -3,9 +3,9 @@
   "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
   "date": "16/11/2026",
   "values": {
-    "soja": 545000,
-    "maiz": 271400,
-    "trigo": 285270,
+    "soja": 545000.0,
+    "maiz": 271400.0,
+    "trigo": 285270.0,
     "girasol": null,
     "sorgo": null
   },
@@ -36,7 +36,7 @@
       "trigo": "Dic-26"
     }
   },
-  "updated": "2026-11-17T15:13:29.072Z",
+  "updated": "2026-11-17T15:14:11.277580+00:00",
   "estimativos": {
     "trigo": null,
     "maiz": null,
