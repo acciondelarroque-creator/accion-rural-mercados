@@ -133,7 +133,7 @@ def obtener_chicago(soup):
 
     # Posiciones de referencia acordadas para la marquesina.
     referencias_fijas = {
-        "soja": "Nov-26",
+        "soja": "Ene-27",
         "maiz": "Dic-26",
         "trigo": "Dic-26",
     }
@@ -157,7 +157,7 @@ def obtener_chicago(soup):
         precio = None
         variacion = None
 
-        if etiqueta == "Nov-26" and producto == "soja":
+        if etiqueta == "Ene-27" and producto == "soja":
             # Nov-26: solo aparece la cotización de Soja.
             if len(numeros) >= 2:
                 precio, variacion = numeros[0], numeros[1]
