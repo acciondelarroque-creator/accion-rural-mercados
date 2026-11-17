@@ -1,69 +1,69 @@
 {
   "source": "Bolsa de Comercio de Rosario - Cámara Arbitral de Cereales",
   "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-locales-0",
-  "date": "12/11/2026",
+  "date": "16/11/2026",
   "values": {
-    "soja": 540000.0,
-    "maiz": 275800.0,
-    "trigo": 288900.0,
+    "soja": 545000,
+    "maiz": 271400,
+    "trigo": 285270,
     "girasol": null,
     "sorgo": null
   },
   "changes": {
-    "soja": -0.92,
-    "maiz": 0.29,
-    "trigo": -3.54,
+    "soja": 0.93,
+    "maiz": -1.6,
+    "trigo": -1.26,
     "girasol": null,
     "sorgo": null
   },
   "chicago": {
     "source": "BCR - Chicago/Kansas (CME Group)",
     "url": "https://www.bcr.com.ar/es/mercados/mercado-de-granos/cotizaciones/cotizaciones-internacionales-1",
-    "date": "13/11/2026",
+    "date": "16/11/2026",
     "values": {
-      "soja": 456.73,
-      "maiz": 175.39,
-      "trigo": 231.03
+      "soja": 451.59,
+      "maiz": 176.67,
+      "trigo": 227.45
     },
     "changes": {
-      "soja": 5.88,
-      "maiz": 1.38,
-      "trigo": 2.39
+      "soja": -1.75,
+      "maiz": 1.18,
+      "trigo": -3.49
     },
     "contracts": {
-      "soja": "Nov-26",
+      "soja": "Ene-27",
       "maiz": "Dic-26",
       "trigo": "Dic-26"
     }
   },
-  "updated": "2026-11-14T01:22:17.914879+00:00",
+  "updated": "2026-11-17T15:13:29.072Z",
   "estimativos": {
     "trigo": null,
     "maiz": null,
-    "sorgo": null,
+    "sorgo": 277600,
     "soja": null,
-    "girasol": null,
-    "date": "12/11/2026"
+    "girasol": 750000,
+    "date": "16/11/2026"
   },
   "localDetails": {
-    "tc_bna": 1536.5,
+    "tc_bna": 1542,
     "usd": {
-      "trigo": 188.02,
-      "maiz": 179.5,
+      "trigo": 185,
+      "maiz": 176.01,
       "sorgo": null,
-      "soja": 351.45,
+      "soja": 353.44,
       "girasol": null
     },
     "source": "BCR - Cámara Arbitral de Cereales",
-    "published": "13/11/2026",
-    "date": "12/11/2026"
+    "published": "17/11/2026",
+    "date": "16/11/2026"
   },
-  "display_date": "12/11/2026",
+  "display_date": "16/11/2026",
   "daily_differences": {
-    "trigo": -10600,
-    "maiz": 800,
+    "trigo": -3630,
+    "maiz": -4400,
     "sorgo": null,
-    "soja": -5000,
+    "soja": 5000,
     "girasol": null
   }
 }
